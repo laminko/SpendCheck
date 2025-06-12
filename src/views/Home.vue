@@ -2,7 +2,10 @@
   <div class="home">
     <header class="header">
       <div class="header-top">
-        <h1>SpendCheck</h1>
+        <div class="logo-title">
+          <img src="/logo.svg" alt="SpendCheck Logo" class="logo" />
+          <h1>SpendCheck</h1>
+        </div>
         <CurrencyPicker />
       </div>
       <p>Did you spend money today?</p>
@@ -259,10 +262,22 @@ onMounted(() => {
   position: relative;
 }
 
+.logo-title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.logo {
+  width: 40px;
+  height: 40px;
+}
+
 .header h1 {
   font-size: 2rem;
   font-weight: 700;
   color: #1f2937;
+  margin: 0;
 }
 
 .header p {

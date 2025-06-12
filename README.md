@@ -1,4 +1,8 @@
-# SpendCheck 💳
+<div align="center">
+  <img src="public/logo.svg" alt="SpendCheck Logo" width="120" height="120">
+  
+  # SpendCheck
+</div>
 
 [![CI](https://github.com/laminko/SpendCheck/actions/workflows/ci.yml/badge.svg)](https://github.com/laminko/SpendCheck/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
