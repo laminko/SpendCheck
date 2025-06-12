@@ -1,7 +1,6 @@
 # SpendCheck 💳
 
-[![Build Status](https://github.com/laminko/SpendCheck/actions/workflows/ci.yml/badge.svg)](https://github.com/laminko/SpendCheck/actions/workflows/ci.yml)
-[![Deploy Status](https://github.com/laminko/SpendCheck/actions/workflows/deploy.yml/badge.svg)](https://github.com/laminko/SpendCheck/actions/workflows/deploy.yml)
+[![CI](https://github.com/laminko/SpendCheck/actions/workflows/ci.yml/badge.svg)](https://github.com/laminko/SpendCheck/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://typescriptlang.org/)
 [![Vue.js](https://img.shields.io/badge/Vue.js-35495E?logo=vue.js&logoColor=4FC08D)](https://vuejs.org/)
@@ -107,17 +106,17 @@ SpendCheck/
 
 ## 🚀 Deployment
 
-### Automatic Deployment
+### Deployment
 
-Every push to `main` automatically deploys to Vercel via GitHub Actions.
-
-### Manual Deployment
+The app is deployed on Vercel with automatic deployments enabled:
+- **Automatic**: Every push to `main` triggers Vercel deployment
+- **Manual**: Use Vercel dashboard or CLI for manual deployments
 
 ```bash
-# Build for production
+# Build for production locally
 npm run build
 
-# Deploy to Vercel
+# Deploy via Vercel CLI (optional)
 npm install -g vercel
 vercel --prod
 ```

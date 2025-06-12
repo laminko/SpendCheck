@@ -32,3 +32,4 @@ dist-ssr
 
 # Screenshots folder
 screenshots/
+.vercel

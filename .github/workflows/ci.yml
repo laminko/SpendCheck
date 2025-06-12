@@ -28,7 +28,7 @@ jobs:
       run: npm ci
 
     - name: Run type check
-      run: npm run build
+      run: npm run typecheck
 
     - name: Check for linting issues
       run: |
