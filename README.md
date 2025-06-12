@@ -26,7 +26,7 @@
 
 ## 🚀 Live Demo
 
-Visit the live app: **[SpendCheck App](https://spend-check.vercel.app)**
+Visit the live app: **[SpendCheck App](https://spend-check-eta.vercel.app)**
 
 ## 🏃‍♂️ Quick Start
 
@@ -193,5 +193,5 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 <div align="center">
   <strong>Built with ❤️ for simple spending tracking</strong>
   <br>
-  <a href="https://spend-check.vercel.app">Try SpendCheck Now</a>
+  <a href="https://spend-check-eta.vercel.app">Try SpendCheck Now</a>
 </div>
