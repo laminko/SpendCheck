@@ -6,21 +6,6 @@
   "framework": "vite",
   "installCommand": "npm ci",
   "devCommand": "npm run dev",
-  "env": {
-    "VITE_SUPABASE_URL": "@vite_supabase_url",
-    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key"
-  },
-  "build": {
-    "env": {
-      "VITE_SUPABASE_URL": "@vite_supabase_url",
-      "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key"
-    }
-  },
-  "functions": {
-    "app/**": {
-      "runtime": "nodejs18.x"
-    }
-  },
   "headers": [
     {
       "source": "/(.*)",
