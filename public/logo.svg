@@ -1,0 +1,20 @@
+<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="85" fill="#4F46E5" stroke="none"/>
+  
+  <!-- Inner white circle for contrast -->
+  <circle cx="100" cy="100" r="70" fill="white" stroke="none"/>
+  
+  <!-- Dollar sign -->
+  <text x="100" y="85" font-family="Arial, sans-serif" font-size="32" font-weight="bold" text-anchor="middle" fill="#4F46E5">$</text>
+  
+  <!-- Checkmark -->
+  <path d="M75 115 L88 128 L125 91" stroke="#10B981" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- Small dots indicating tracking/pattern -->
+  <circle cx="70" cy="140" r="3" fill="#6B7280"/>
+  <circle cx="85" cy="140" r="3" fill="#6B7280"/>
+  <circle cx="100" cy="140" r="3" fill="#6B7280"/>
+  <circle cx="115" cy="140" r="3" fill="#10B981"/>
+  <circle cx="130" cy="140" r="3" fill="#6B7280"/>
+</svg>
