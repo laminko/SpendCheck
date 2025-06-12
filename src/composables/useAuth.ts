@@ -1,5 +1,4 @@
 import { ref, computed } from 'vue'
-import { supabase } from '@/lib/supabase'
 
 const userId = ref<string | null>(null)
 
