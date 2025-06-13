@@ -156,7 +156,12 @@ const saveSpending = async () => {
     category: categoryName
   })
   
-  resetForm()
+  // Reset form but keep the selected category if it was a custom one that was just created
+  amount.value = ''
+  if (selectedCategory.value === 'custom') {
+    selectedCategory.value = categoryId || ''
+  }
+  customCategory.value = ''
 }
 
 const resetForm = () => {
