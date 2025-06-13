@@ -89,7 +89,7 @@ import { useCurrency } from '@/composables/useCurrency'
 
 const loading = ref(false)
 const entries = ref<Array<{ date: string, amount: number, currency: string }>>([])
-const { getCurrentUserId, initializeAuth, ensureValidSession } = useAuth()
+const { ensureValidSession } = useAuth()
 const { currencySymbol, currencyCode, loadSavedCurrency, formatAmount } = useCurrency()
 const showAmountInput = ref(false)
 const currentAmount = ref('')
