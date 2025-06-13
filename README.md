@@ -15,29 +15,13 @@
 
 ## ✨ Features
 
-### 🎯 **Effortless Spending Tracking**
-- **Large Circular Button** - Prominent "TAP IF YOU SPENT TODAY" design
-- **Smart Category System** - 9 built-in categories (Food, Transport, Shopping, etc.) + custom categories
-- **Modal Dialog** - Clean amount input with category selection
-- **One-Tap Workflow** - Minimal friction for daily logging
+**Track Daily Spending**
+- Tap button to log spending
+- Choose categories or skip them
+- See your spending patterns
+- Works on any device
 
-### 📊 **Beautiful Visualizations** 
-- **GitHub-Style Activity Grid** - 7×14 grid showing 14 weeks of spending patterns
-- **Perfect Square Cells** - Clean, responsive grid layout with day-of-week rows
-- **Dual Chart Views** - Switch between activity grid and line chart
-- **Smart Tooltips** - Hover to see daily amounts and dates
-
-### 💰 **Smart Money Management**
-- **Multi-Currency Support** - 21 major world currencies with proper formatting
-- **Statistics Cards** - Current streak, monthly days, and total spending
-- **Streak Tracking** - Monitor consistent spending tracking habits
-- **Real-Time Updates** - Instant data sync across devices
-
-### 📱 **Mobile-First Experience**
-- **Responsive Design** - Works great on phones, tablets, and desktop
-- **Touch-Optimized** - Large touch targets and smooth interactions
-- **Anonymous Usage** - No signup required, privacy-focused
-- **Real-Time Sync** - Data syncs across devices
+**That's it.** No signup, no complexity.
 
 ## 🚀 Live Demo
 
