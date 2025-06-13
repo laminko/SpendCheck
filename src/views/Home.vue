@@ -360,6 +360,12 @@ onMounted(() => {
   --border-radius: 50%;
   --background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
   --box-shadow: 0 10px 25px rgba(var(--ion-color-primary-rgb), 0.3);
+  width: 200px !important;
+  height: 200px !important;
+  border-radius: 50% !important;
+  margin: 0;
+  flex-shrink: 0;
+  aspect-ratio: 1;
 }
 
 .spend-button:hover {
@@ -434,6 +440,8 @@ onMounted(() => {
   .spend-button {
     --width: 180px;
     --height: 180px;
+    width: 180px !important;
+    height: 180px !important;
   }
 }
 </style>
