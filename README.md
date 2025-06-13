@@ -11,22 +11,52 @@
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)](https://vercel.com/)
 
-> **Simple spending tracker app** - Just tap if you spent money today, see spending patterns. Built with Vue 3 and Supabase.
+> **Modern spending tracker with categories** - Tap the circular button to log spending with categories, see patterns in GitHub-style activity grid. Built with Vue 3 and Supabase.
 
 ## ✨ Features
 
-- **🎯 Minimal Attention Design** - One-tap spending logging
-- **💰 Multi-Currency Support** - 21 major world currencies
-- **📊 Dual Chart Views** - GitHub-style grid or line chart
-- **🔥 Streak Tracking** - Monitor spending habits
-- **📱 Mobile-First** - Optimized for phones and tablets
-- **🌐 Anonymous Usage** - No signup required
-- **⚡ Real-time Updates** - Powered by Supabase
-- **🎨 Clean UI** - Modern, responsive design
+### 🎯 **Effortless Spending Tracking**
+- **Large Circular Button** - Prominent "TAP IF YOU SPENT TODAY" design
+- **Smart Category System** - 9 built-in categories (Food, Transport, Shopping, etc.) + custom categories
+- **Modal Dialog** - Clean amount input with category selection
+- **One-Tap Workflow** - Minimal friction for daily logging
+
+### 📊 **Beautiful Visualizations** 
+- **GitHub-Style Activity Grid** - 7×14 grid showing 14 weeks of spending patterns
+- **Perfect Square Cells** - Clean, responsive grid layout with day-of-week rows
+- **Dual Chart Views** - Switch between activity grid and line chart
+- **Smart Tooltips** - Hover to see daily amounts and dates
+
+### 💰 **Smart Money Management**
+- **Multi-Currency Support** - 21 major world currencies with proper formatting
+- **Statistics Cards** - Current streak, monthly days, and total spending
+- **Streak Tracking** - Monitor consistent spending tracking habits
+- **Real-Time Updates** - Instant data sync across devices
+
+### 📱 **Mobile-First Experience**
+- **Responsive Design** - Perfect on phones, tablets, and desktop
+- **Touch-Optimized** - Large touch targets and smooth interactions
+- **Anonymous Usage** - No signup required, privacy-focused
+- **Offline-Ready** - Works seamlessly with poor connectivity
 
 ## 🚀 Live Demo
 
 Visit the live app: **[SpendCheck App](https://spend-check-eta.vercel.app)**
+
+## 🎉 Recent Updates
+
+### v2.0 - Home Page Redesign (December 2024)
+- **🎯 New Circular Button** - Large, prominent "TAP IF YOU SPENT TODAY" design
+- **🗂️ Spending Categories** - 9 built-in categories + custom category support
+- **📊 Perfect Activity Grid** - True 7×14 layout with square cells and proper day alignment
+- **🎨 Modal Dialog** - Clean spending input with category selection and validation
+- **📱 Enhanced Mobile UX** - Touch-optimized design with responsive scaling
+
+### 🚧 Roadmap
+- **📋 Statistics Cards Redesign** - 3 horizontal cards layout
+- **📱 Bottom Navigation** - Home/History/Graph tabs
+- **📊 Enhanced Analytics** - Category breakdowns and spending insights
+- **📤 Data Export** - CSV/PDF export functionality
 
 ## 🏃‍♂️ Quick Start
 
@@ -92,21 +122,33 @@ Visit the live app: **[SpendCheck App](https://spend-check-eta.vercel.app)**
 ```
 SpendCheck/
 ├── src/
-│   ├── components/          # Reusable UI components
-│   │   ├── ChartToggle.vue  # Grid/Line chart switcher
-│   │   ├── CurrencyPicker.vue # Multi-currency selector
-│   │   ├── LineChart.vue    # SVG line chart
-│   │   └── SpendingChart.vue # Grid chart container
-│   ├── composables/         # Vue composition functions
-│   │   ├── useAuth.ts       # Anonymous user management
-│   │   └── useCurrency.ts   # Currency formatting & selection
+│   ├── components/              # Reusable UI components
+│   │   ├── ChartToggle.vue      # Grid/Line chart switcher
+│   │   ├── CurrencyPicker.vue   # Multi-currency selector
+│   │   ├── LineChart.vue        # SVG line chart visualization
+│   │   ├── SpendingChart.vue    # GitHub-style activity grid (7×14)
+│   │   └── SpendingDialog.vue   # Modal for amount + category input
+│   ├── composables/             # Vue composition functions
+│   │   ├── useAuth.ts           # Anonymous user management
+│   │   └── useCurrency.ts       # Currency formatting & selection
 │   ├── lib/
-│   │   └── supabase.ts      # Database client & types
+│   │   └── supabase.ts          # Database client & TypeScript types
 │   └── views/
-│       └── Home.vue         # Main app interface
-├── docs/                    # Documentation site
-└── .github/workflows/       # CI/CD automation
+│       └── Home.vue             # Main app with circular button & stats
+├── docs/                        # Documentation site
+└── .github/
+    ├── workflows/               # CI/CD automation
+    └── projects/                # GitHub project management
 ```
+
+### 🏗️ **Key Components**
+
+| Component | Purpose | Features |
+|-----------|---------|----------|
+| **SpendingDialog** | Category-enabled spending input | Amount input, 9+ categories, validation |
+| **SpendingChart** | Activity grid visualization | 7×14 grid, perfect squares, tooltips |
+| **Home.vue** | Main interface | Circular button, stats cards, chart integration |
+| **Supabase Types** | Type-safe database | Category support, currency handling |
 
 ## 🚀 Deployment
 
