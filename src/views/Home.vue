@@ -417,7 +417,7 @@ onMounted(() => {
 }
 
 .stat-number {
-  font-size: 1.2rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--ion-color-primary);
   word-break: keep-all;
