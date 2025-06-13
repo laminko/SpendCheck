@@ -108,7 +108,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useCurrency } from '@/composables/useCurrency'
 
 interface Props {
-  entries: Array<{ date: string, amount: number, currency: string }>
+  entries: Array<{ date: string, amount: number, currency: string, category?: string }>
 }
 
 const props = defineProps<Props>()

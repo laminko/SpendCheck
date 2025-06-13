@@ -28,18 +28,18 @@
       <div class="main-content">
         <div class="tap-section">
           <div v-if="!showAmountInput && !todayLogged" class="spend-button-container">
-            <ion-button
-              shape="round"
-              size="large"
-              class="spend-button"
+            <button
+              class="circular-spend-button"
               @click="handleSpendButtonClick"
               :disabled="loading"
             >
-              <div class="button-content">
-                <div class="icon">💳</div>
-                <div class="text">Tap if you spent today</div>
+              <ion-icon :icon="cardOutline" class="card-icon"></ion-icon>
+              <div class="button-text">
+                TAP IF YOU<br>
+                SPENT<br>
+                TODAY
               </div>
-            </ion-button>
+            </button>
           </div>
 
           <div v-else-if="showAmountInput" class="amount-input-container">
@@ -120,6 +120,13 @@
         </div>
       </div>
     </ion-content>
+
+    <!-- Spending Dialog -->
+    <SpendingDialog
+      :is-open="showSpendingDialog"
+      @close="showSpendingDialog = false"
+      @save="logSpending"
+    />
   </ion-page>
 </template>
 
@@ -143,21 +150,23 @@ import {
   IonRow,
   IonCol
 } from '@ionic/vue'
-import { checkmarkCircle } from 'ionicons/icons'
+import { checkmarkCircle, cardOutline } from 'ionicons/icons'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { supabase } from '@/lib/supabase'
 import SpendingChart from '@/components/SpendingChart.vue'
 import CurrencyPicker from '@/components/CurrencyPicker.vue'
+import SpendingDialog from '@/components/SpendingDialog.vue'
 import { useAuth } from '@/composables/useAuth'
 import { useCurrency } from '@/composables/useCurrency'
 
 const loading = ref(false)
-const entries = ref<Array<{ date: string, amount: number, currency: string }>>([])
+const entries = ref<Array<{ date: string, amount: number, currency: string, category?: string }>>([])
 const { ensureValidSession } = useAuth()
 const { currencySymbol, currencyCode, loadSavedCurrency, formatAmount } = useCurrency()
 const showAmountInput = ref(false)
 const currentAmount = ref('')
 const amountInput = ref()
+const showSpendingDialog = ref(false)
 
 const todayLogged = computed(() => {
   const today = new Date().toISOString().split('T')[0]
@@ -214,12 +223,10 @@ const handleSpendButtonClick = async () => {
   } catch (error) {
     // Haptics not available on web
   }
-  showAmountInput.value = true
+  showSpendingDialog.value = true
 }
 
-const logSpending = async () => {
-  if (!currentAmount.value) return
-
+const logSpending = async (spendingData: { amount: number; category: string }) => {
   // Haptic feedback for save action
   try {
     await Haptics.impact({ style: ImpactStyle.Light })
@@ -230,14 +237,18 @@ const logSpending = async () => {
   loading.value = true
   const today = new Date().toISOString().split('T')[0]
   const userId = await ensureValidSession()
-  const amount = parseFloat(currentAmount.value)
+  const { amount, category } = spendingData
 
   try {
     if (todayLogged.value) {
       // Update existing entry
       const { error } = await supabase
         .from('spending_entries')
-        .update({ amount: amount, currency: currencyCode.value })
+        .update({ 
+          amount: amount, 
+          currency: currencyCode.value,
+          category: category 
+        })
         .eq('user_id', userId)
         .eq('date', today)
 
@@ -248,6 +259,7 @@ const logSpending = async () => {
       if (entryIndex !== -1) {
         entries.value[entryIndex].amount = amount
         entries.value[entryIndex].currency = currencyCode.value
+        entries.value[entryIndex].category = category
       }
     } else {
       // Insert new entry
@@ -258,17 +270,22 @@ const logSpending = async () => {
             user_id: userId,
             amount: amount,
             currency: currencyCode.value,
+            category: category,
             date: today
           }
         ])
 
       if (error) throw error
 
-      entries.value.push({ date: today, amount, currency: currencyCode.value })
+      entries.value.push({ 
+        date: today, 
+        amount, 
+        currency: currencyCode.value,
+        category 
+      })
     }
 
-    showAmountInput.value = false
-    currentAmount.value = ''
+    showSpendingDialog.value = false
   } catch (error) {
     console.error('Error logging spending:', error)
   } finally {
@@ -301,7 +318,7 @@ const loadEntries = async () => {
   try {
     const { data, error } = await supabase
       .from('spending_entries')
-      .select('date, amount, currency')
+      .select('date, amount, currency, category')
       .eq('user_id', userId)
       .order('date', { ascending: false })
 
@@ -354,39 +371,54 @@ onMounted(() => {
   min-height: 200px;
 }
 
-.spend-button {
-  --width: 200px;
-  --height: 200px;
-  --border-radius: 50%;
-  --background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
-  --box-shadow: 0 10px 25px rgba(var(--ion-color-primary-rgb), 0.3);
-  width: 200px !important;
-  height: 200px !important;
-  border-radius: 50% !important;
-  margin: 0;
-  flex-shrink: 0;
-  aspect-ratio: 1;
-}
-
-.spend-button:hover {
-  --box-shadow: 0 15px 35px rgba(var(--ion-color-primary-rgb), 0.4);
-}
-
-.button-content {
+.circular-spend-button {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  box-shadow: 0 15px 40px rgba(59, 130, 246, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 1rem;
+  position: relative;
+  overflow: hidden;
 }
 
-.icon {
-  font-size: 2rem;
+.circular-spend-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 50px rgba(59, 130, 246, 0.4);
 }
 
-.text {
-  font-weight: 600;
+.circular-spend-button:active {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(59, 130, 246, 0.4);
+}
+
+.circular-spend-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.card-icon {
+  font-size: 3rem;
+  color: white;
+  opacity: 0.9;
+}
+
+.button-text {
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
   text-align: center;
-  line-height: 1.3;
+  line-height: 1.2;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .amount-input-container {
@@ -439,12 +471,37 @@ onMounted(() => {
 }
 
 /* Mobile optimizations */
+@media (max-width: 768px) {
+  .circular-spend-button {
+    width: 240px;
+    height: 240px;
+  }
+  
+  .card-icon {
+    font-size: 2.5rem;
+  }
+  
+  .button-text {
+    font-size: 1rem;
+  }
+}
+
 @media (max-width: 480px) {
-  .spend-button {
-    --width: 180px;
-    --height: 180px;
-    width: 180px !important;
-    height: 180px !important;
+  .circular-spend-button {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .card-icon {
+    font-size: 2rem;
+  }
+  
+  .button-text {
+    font-size: 0.9rem;
+  }
+  
+  .tap-section {
+    min-height: 150px;
   }
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <div class="spending-chart">
     <div class="chart-header">
-      <h3>Last 14 Weeks</h3>
+      <h3>Activity</h3>
       <ChartToggle :model-value="chartType" @change="updateChartType" />
     </div>
     
@@ -50,7 +50,7 @@ import ChartToggle from './ChartToggle.vue'
 import LineChart from './LineChart.vue'
 
 interface Props {
-  entries: Array<{ date: string, amount: number, currency: string }>
+  entries: Array<{ date: string, amount: number, currency: string, category?: string }>
 }
 
 const props = defineProps<Props>()
@@ -149,7 +149,6 @@ const chartData = computed(() => {
   flex-direction: column;
   gap: 1rem;
   position: relative;
-  min-height: 200px;
 }
 
 .chart-grid, .line-chart {
