@@ -213,9 +213,13 @@ const chartData = computed(() => {
 /* Mobile breakpoint */
 @media (max-width: 480px) {
   .chart-grid {
-    grid-template-columns: repeat(7, 1fr);
-    grid-template-rows: repeat(13, 1fr);
-    gap: 0.1rem;
+    grid-template-columns: repeat(13, 1fr);
+    grid-template-rows: repeat(7, 1fr);
+    gap: 0.05rem;
+  }
+  
+  .chart-day {
+    border-radius: 2px;
   }
   
   .chart-legend {
