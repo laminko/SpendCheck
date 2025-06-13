@@ -12,9 +12,12 @@
           v-for="(day, index) in chartData" 
           :key="index"
           class="chart-day"
-          :class="{ 'has-spending': day.hasSpending }"
-          :style="{ opacity: day.hasSpending ? day.intensity : 0.2 }"
-          :title="`${day.date}: ${day.hasSpending ? `${day.currency || '$'}${day.amount.toFixed(2)}` : 'No spending'}`"
+          :class="{ 
+            'has-spending': day.hasSpending,
+            'invisible': !day.isVisible
+          }"
+          :style="{ opacity: day.hasSpending ? day.intensity : (day.isVisible ? 0.2 : 0.05) }"
+          :title="day.isVisible ? `${day.date}: ${day.hasSpending ? `${day.currency || '$'}${day.amount.toFixed(2)}` : 'No spending'}` : ''"
         >
         </div>
       </div>
@@ -58,36 +61,62 @@ const updateChartType = (type: 'grid' | 'line') => {
 }
 
 const chartData = computed(() => {
-  const data = []
-  const today = new Date()
   const amounts = props.entries.map(e => e.amount)
   const maxAmount = Math.max(...amounts, 1)
   
-  // Calculate 91 days to fill exactly 7 rows × 13 columns
-  const totalDays = 91
+  // Create a 7×13 grid (91 cells) arranged by weeks
+  const grid = Array(91).fill(null)
+  const today = new Date()
   
-  // Start from 90 days ago to today (91 days total)
-  for (let i = totalDays - 1; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(today.getDate() - i)
-    const dateStr = date.toISOString().split('T')[0]
-    
-    const entry = props.entries.find(entry => entry.date === dateStr)
-    const hasSpending = !!entry
-    const amount = entry?.amount || 0
-    const currency = entry?.currency || '$'
-    const intensity = hasSpending ? Math.max(0.3, amount / maxAmount) : 0
-    
-    data.push({
-      date: dateStr,
-      hasSpending,
-      amount,
-      currency,
-      intensity
-    })
+  // Calculate the start date to fill 13 weeks
+  const startDate = new Date(today)
+  startDate.setDate(today.getDate() - 90) // 90 days ago
+  
+  // Find the Sunday before or on the start date
+  const startSunday = new Date(startDate)
+  const daysSinceLastSunday = startDate.getDay() // 0 = Sunday, 1 = Monday, etc.
+  startSunday.setDate(startDate.getDate() - daysSinceLastSunday)
+  
+  // Fill the grid with proper week arrangement
+  for (let week = 0; week < 13; week++) {
+    for (let day = 0; day < 7; day++) { // 0 = Sunday, 6 = Saturday
+      const currentDate = new Date(startSunday)
+      currentDate.setDate(startSunday.getDate() + (week * 7) + day)
+      
+      const gridIndex = week * 7 + day
+      const dateStr = currentDate.toISOString().split('T')[0]
+      
+      // Only include dates within our range
+      if (currentDate <= today && currentDate >= startDate) {
+        const entry = props.entries.find(entry => entry.date === dateStr)
+        const hasSpending = !!entry
+        const amount = entry?.amount || 0
+        const currency = entry?.currency || '$'
+        const intensity = hasSpending ? Math.max(0.3, amount / maxAmount) : 0
+        
+        grid[gridIndex] = {
+          date: dateStr,
+          hasSpending,
+          amount,
+          currency,
+          intensity,
+          isVisible: true
+        }
+      } else {
+        // Empty cell for dates outside our range
+        grid[gridIndex] = {
+          date: dateStr,
+          hasSpending: false,
+          amount: 0,
+          currency: '$',
+          intensity: 0,
+          isVisible: false
+        }
+      }
+    }
   }
   
-  return data
+  return grid.filter(cell => cell !== null)
 })
 </script>
 
@@ -145,8 +174,17 @@ const chartData = computed(() => {
   background: #3b82f6;
 }
 
+.chart-day.invisible {
+  pointer-events: none;
+  cursor: default;
+}
+
 .chart-day:hover {
   transform: scale(1.1);
+}
+
+.chart-day.invisible:hover {
+  transform: none;
 }
 
 .chart-legend {
