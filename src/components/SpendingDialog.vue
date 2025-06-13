@@ -32,15 +32,15 @@
           <ion-select
             v-model="selectedCategory"
             placeholder="Select category"
-            interface="popover"
+            interface="action-sheet"
             class="category-select"
           >
             <ion-select-option
               v-for="category in categories"
-              :key="category.value"
-              :value="category.value"
+              :key="category.id"
+              :value="category.id"
             >
-              {{ category.icon }} {{ category.label }}
+              {{ category.icon }} {{ category.name }}
             </ion-select-option>
             <ion-select-option value="custom">
               ➕ Add new category
@@ -77,7 +77,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick } from 'vue'
+import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { 
   IonModal, 
   IonButton, 
@@ -88,6 +88,7 @@ import {
 } from '@ionic/vue'
 import { closeOutline } from 'ionicons/icons'
 import { useCurrency } from '@/composables/useCurrency'
+import { useCategoryStore } from '@/composables/useCategoryStore'
 
 // Props
 interface Props {
@@ -99,11 +100,12 @@ const props = defineProps<Props>()
 // Emits
 const emit = defineEmits<{
   close: []
-  save: [data: { amount: number; category: string }]
+  save: [data: { amount: number; category?: string; categoryId?: string }]
 }>()
 
 // Composables
 const { currencySymbol } = useCurrency()
+const { categories, loadCategories, addCategory } = useCategoryStore()
 
 // Reactive data
 const amount = ref('')
@@ -111,23 +113,10 @@ const selectedCategory = ref('')
 const customCategory = ref('')
 const amountInput = ref()
 
-// Default categories
-const categories = [
-  { value: 'food', label: 'Food & Dining', icon: '🍕' },
-  { value: 'transport', label: 'Transportation', icon: '🚗' },
-  { value: 'shopping', label: 'Shopping', icon: '🛒' },
-  { value: 'entertainment', label: 'Entertainment', icon: '🎬' },
-  { value: 'bills', label: 'Bills & Utilities', icon: '🏠' },
-  { value: 'healthcare', label: 'Healthcare', icon: '💊' },
-  { value: 'education', label: 'Education', icon: '📚' },
-  { value: 'travel', label: 'Travel', icon: '✈️' },
-  { value: 'other', label: 'Other', icon: '💰' }
-]
-
 // Computed
 const isValid = computed(() => {
   const amountValid = amount.value && parseFloat(amount.value) > 0
-  const categoryValid = selectedCategory.value && 
+  const categoryValid = !selectedCategory.value || 
     (selectedCategory.value !== 'custom' || (customCategory.value.trim().length > 0))
   return amountValid && categoryValid
 })
@@ -138,16 +127,33 @@ const closeDialog = () => {
   resetForm()
 }
 
-const saveSpending = () => {
+const saveSpending = async () => {
   if (!isValid.value) return
 
-  const finalCategory = selectedCategory.value === 'custom' 
-    ? customCategory.value.trim() 
-    : selectedCategory.value
+  let categoryId = selectedCategory.value
+  let categoryName = selectedCategory.value
+
+  // Handle custom category creation
+  if (selectedCategory.value === 'custom' && customCategory.value.trim()) {
+    const newCategory = await addCategory({
+      name: customCategory.value.trim(),
+      icon: '📝'
+    })
+    
+    if (newCategory) {
+      categoryId = newCategory.id
+      categoryName = newCategory.name
+    }
+  } else if (selectedCategory.value && selectedCategory.value !== 'custom') {
+    // Find the selected category to get its name
+    const category = categories.value.find(cat => cat.id === selectedCategory.value)
+    categoryName = category?.name || selectedCategory.value
+  }
 
   emit('save', {
     amount: parseFloat(amount.value),
-    category: finalCategory
+    categoryId: categoryId === 'custom' ? undefined : categoryId,
+    category: categoryName
   })
   
   resetForm()
@@ -158,6 +164,11 @@ const resetForm = () => {
   selectedCategory.value = ''
   customCategory.value = ''
 }
+
+// Load categories on component mount
+onMounted(() => {
+  loadCategories()
+})
 
 // Watch for dialog opening to focus amount input
 watch(() => props.isOpen, (isOpen) => {
