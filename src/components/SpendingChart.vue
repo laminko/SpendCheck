@@ -91,10 +91,10 @@ const chartData = computed(() => {
       
       // Only include dates within our range
       if (currentDate <= today && currentDate >= startDate) {
-        const entry = props.entries.find(entry => entry.date === dateStr)
-        const hasSpending = !!entry
-        const amount = entry?.amount || 0
-        const currency = entry?.currency || '$'
+        const dayEntries = props.entries.filter(entry => entry.date === dateStr)
+        const hasSpending = dayEntries.length > 0
+        const amount = dayEntries.reduce((sum, entry) => sum + entry.amount, 0)
+        const currency = dayEntries[0]?.currency || '$'
         const intensity = hasSpending ? Math.max(0.3, amount / maxAmount) : 0
         
         grid[gridIndex] = {
