@@ -16,7 +16,7 @@
             'has-spending': day.hasSpending,
             'invisible': !day.isVisible
           }"
-          :style="{ opacity: day.hasSpending ? day.intensity : (day.isVisible ? 0.2 : 0.05) }"
+          :style="{ opacity: day.hasSpending ? day.intensity : (day.isVisible ? 0.5 : 0.15) }"
           :title="day.isVisible ? `${day.date}: ${day.hasSpending ? `${day.currency || '$'}${day.amount.toFixed(2)}` : 'No spending'}` : ''"
         >
         </div>
@@ -95,7 +95,7 @@ const chartData = computed(() => {
         const hasSpending = dayEntries.length > 0
         const amount = dayEntries.reduce((sum, entry) => sum + entry.amount, 0)
         const currency = dayEntries[0]?.currency || '$'
-        const intensity = hasSpending ? Math.max(0.3, amount / maxAmount) : 0
+        const intensity = hasSpending ? Math.max(0.75, amount / maxAmount) : 0
         
         grid[gridIndex] = {
           date: dateStr,
@@ -159,7 +159,7 @@ const chartData = computed(() => {
   display: grid;
   grid-template-columns: repeat(14, 1fr);
   grid-template-rows: repeat(7, 1fr);
-  gap: 0.2rem;
+  gap: 0.3rem;
   max-width: 100%;
   overflow: hidden;
 }
