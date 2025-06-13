@@ -15,6 +15,7 @@ export type Database = {
           amount: number
           currency: string
           category: string | null
+          category_id: string | null
           date: string
           created_at: string
         }
@@ -24,6 +25,7 @@ export type Database = {
           amount: number
           currency: string
           category?: string | null
+          category_id?: string | null
           date: string
           created_at?: string
         }
@@ -33,7 +35,37 @@ export type Database = {
           amount?: number
           currency?: string
           category?: string | null
+          category_id?: string | null
           date?: string
+          created_at?: string
+        }
+      }
+      categories: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          icon: string | null
+          color: string | null
+          is_default: boolean
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          icon?: string | null
+          color?: string | null
+          is_default?: boolean
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          icon?: string | null
+          color?: string | null
+          is_default?: boolean
           created_at?: string
         }
       }
@@ -47,6 +79,17 @@ export interface SpendingEntry {
   amount: number
   currency: string
   category?: string | null
+  category_id?: string | null
   date: string
+  created_at: string
+}
+
+export interface Category {
+  id: string
+  user_id: string
+  name: string
+  icon?: string | null
+  color?: string | null
+  is_default: boolean
   created_at: string
 }

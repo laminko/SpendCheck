@@ -27,7 +27,7 @@
 
       <div class="main-content">
         <div class="tap-section">
-          <div v-if="!showAmountInput && !todayLogged" class="spend-button-container">
+          <div class="spend-button-container">
             <button
               class="circular-spend-button"
               @click="handleSpendButtonClick"
@@ -42,62 +42,20 @@
             </button>
           </div>
 
-          <div v-else-if="showAmountInput" class="amount-input-container">
-            <ion-card>
-              <ion-card-content>
-                <ion-item>
-                  <ion-label position="stacked">Amount ({{ currencySymbol }})</ion-label>
-                  <ion-input
-                    ref="amountInput"
-                    v-model="currentAmount"
-                    type="number"
-                    step="0.01"
-                    placeholder="0.00"
-                    @keyup.enter="logSpending"
-                    @ion-blur="onAmountBlur"
-                  ></ion-input>
-                </ion-item>
-                <div class="amount-actions">
-                  <ion-button fill="clear" @click="cancelAmount">Cancel</ion-button>
-                  <ion-button @click="logSpending" :disabled="!currentAmount || loading">
-                    {{ todayLogged ? 'Update' : 'Save' }}
-                  </ion-button>
-                </div>
-              </ion-card-content>
-            </ion-card>
-          </div>
-
-          <div v-else class="logged-container">
-            <ion-card color="success">
-              <ion-card-content class="ion-text-center">
-                <ion-icon :icon="checkmarkCircle" size="large" class="logged-icon"></ion-icon>
-                <p class="logged-text">{{ formatAmount(parseFloat(todayAmount)) }} logged for today!</p>
-                <ion-button fill="clear" @click="editTodayAmount">Edit</ion-button>
-              </ion-card-content>
-            </ion-card>
-          </div>
         </div>
 
         <div class="stats-section">
           <ion-grid>
             <ion-row>
-              <ion-col size="4">
+              <ion-col size="6">
                 <ion-card class="stat-card">
                   <ion-card-content class="ion-text-center">
-                    <div class="stat-number">{{ streak }}</div>
-                    <div class="stat-label">Current Streak</div>
+                    <div class="stat-number">{{ formatAmount(parseFloat(todayTotal), undefined, true) }}</div>
+                    <div class="stat-label">Total Today</div>
                   </ion-card-content>
                 </ion-card>
               </ion-col>
-              <ion-col size="4">
-                <ion-card class="stat-card">
-                  <ion-card-content class="ion-text-center">
-                    <div class="stat-number">{{ thisMonthDays }}</div>
-                    <div class="stat-label">Days This Month</div>
-                  </ion-card-content>
-                </ion-card>
-              </ion-col>
-              <ion-col size="4">
+              <ion-col size="6">
                 <ion-card class="stat-card">
                   <ion-card-content class="ion-text-center">
                     <div class="stat-number">{{ formatAmount(parseFloat(thisMonthTotal), undefined, true) }}</div>
@@ -139,18 +97,14 @@ import {
   IonTitle,
   IonContent,
   IonButtons,
-  IonButton,
   IonCard,
   IonCardContent,
-  IonItem,
-  IonLabel,
-  IonInput,
   IonIcon,
   IonGrid,
   IonRow,
   IonCol
 } from '@ionic/vue'
-import { checkmarkCircle, cardOutline } from 'ionicons/icons'
+import { cardOutline } from 'ionicons/icons'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { supabase } from '@/lib/supabase'
 import SpendingChart from '@/components/SpendingChart.vue'
@@ -160,52 +114,20 @@ import { useAuth } from '@/composables/useAuth'
 import { useCurrency } from '@/composables/useCurrency'
 
 const loading = ref(false)
-const entries = ref<Array<{ date: string, amount: number, currency: string, category?: string }>>([])
+const entries = ref<Array<{ date: string, amount: number, currency: string, category?: string, category_id?: string }>>([])
 const { ensureValidSession } = useAuth()
-const { currencySymbol, currencyCode, loadSavedCurrency, formatAmount } = useCurrency()
-const showAmountInput = ref(false)
-const currentAmount = ref('')
-const amountInput = ref()
+const { currencyCode, loadSavedCurrency, formatAmount } = useCurrency()
 const showSpendingDialog = ref(false)
 
-const todayLogged = computed(() => {
+
+const todayTotal = computed(() => {
   const today = new Date().toISOString().split('T')[0]
-  return entries.value.some(entry => entry.date === today)
+  return entries.value
+    .filter(entry => entry.date === today)
+    .reduce((sum, entry) => sum + entry.amount, 0)
+    .toFixed(2)
 })
 
-const todayAmount = computed(() => {
-  const today = new Date().toISOString().split('T')[0]
-  const todayEntry = entries.value.find(entry => entry.date === today)
-  return todayEntry ? todayEntry.amount.toFixed(2) : '0.00'
-})
-
-const streak = computed(() => {
-  if (entries.value.length === 0) return 0
-
-  let currentStreak = 0
-  const today = new Date()
-
-  for (let i = 0; i < 365; i++) {
-    const checkDate = new Date(today)
-    checkDate.setDate(today.getDate() - i)
-    const dateStr = checkDate.toISOString().split('T')[0]
-
-    if (entries.value.some(entry => entry.date === dateStr)) {
-      currentStreak++
-    } else {
-      break
-    }
-  }
-
-  return currentStreak
-})
-
-const thisMonthDays = computed(() => {
-  const now = new Date()
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-
-  return entries.value.filter(entry => entry.date >= firstDay).length
-})
 
 const thisMonthTotal = computed(() => {
   const now = new Date()
@@ -226,7 +148,7 @@ const handleSpendButtonClick = async () => {
   showSpendingDialog.value = true
 }
 
-const logSpending = async (spendingData: { amount: number; category: string }) => {
+const logSpending = async (spendingData: { amount: number; category?: string; categoryId?: string }) => {
   // Haptic feedback for save action
   try {
     await Haptics.impact({ style: ImpactStyle.Light })
@@ -237,53 +159,32 @@ const logSpending = async (spendingData: { amount: number; category: string }) =
   loading.value = true
   const today = new Date().toISOString().split('T')[0]
   const userId = await ensureValidSession()
-  const { amount, category } = spendingData
+  const { amount, category, categoryId } = spendingData
 
   try {
-    if (todayLogged.value) {
-      // Update existing entry
-      const { error } = await supabase
-        .from('spending_entries')
-        .update({ 
-          amount: amount, 
+    // Always insert new entry
+    const { error } = await supabase
+      .from('spending_entries')
+      .insert([
+        {
+          user_id: userId,
+          amount: amount,
           currency: currencyCode.value,
-          category: category 
-        })
-        .eq('user_id', userId)
-        .eq('date', today)
+          category: category || null,
+          category_id: categoryId || null,
+          date: today
+        }
+      ])
 
-      if (error) throw error
+    if (error) throw error
 
-      // Update local data
-      const entryIndex = entries.value.findIndex(entry => entry.date === today)
-      if (entryIndex !== -1) {
-        entries.value[entryIndex].amount = amount
-        entries.value[entryIndex].currency = currencyCode.value
-        entries.value[entryIndex].category = category
-      }
-    } else {
-      // Insert new entry
-      const { error } = await supabase
-        .from('spending_entries')
-        .insert([
-          {
-            user_id: userId,
-            amount: amount,
-            currency: currencyCode.value,
-            category: category,
-            date: today
-          }
-        ])
-
-      if (error) throw error
-
-      entries.value.push({ 
-        date: today, 
-        amount, 
-        currency: currencyCode.value,
-        category 
-      })
-    }
+    entries.value.push({ 
+      date: today, 
+      amount, 
+      currency: currencyCode.value,
+      category,
+      category_id: categoryId
+    })
 
     showSpendingDialog.value = false
   } catch (error) {
@@ -293,24 +194,6 @@ const logSpending = async (spendingData: { amount: number; category: string }) =
   }
 }
 
-const cancelAmount = () => {
-  showAmountInput.value = false
-  currentAmount.value = ''
-}
-
-const editTodayAmount = () => {
-  currentAmount.value = todayAmount.value
-  showAmountInput.value = true
-  setTimeout(() => amountInput.value?.$el.setFocus(), 100)
-}
-
-const onAmountBlur = () => {
-  setTimeout(() => {
-    if (!document.activeElement?.closest('.amount-input-container')) {
-      cancelAmount()
-    }
-  }, 100)
-}
 
 const loadEntries = async () => {
   const userId = await ensureValidSession()
@@ -318,7 +201,7 @@ const loadEntries = async () => {
   try {
     const { data, error } = await supabase
       .from('spending_entries')
-      .select('date, amount, currency, category')
+      .select('date, amount, currency, category, category_id')
       .eq('user_id', userId)
       .order('date', { ascending: false })
 
