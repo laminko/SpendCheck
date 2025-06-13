@@ -43,6 +43,7 @@ export interface SpendingEntry {
   user_id: string
   amount: number
   currency: string
+  category: string
   date: string
   created_at: string
 }
