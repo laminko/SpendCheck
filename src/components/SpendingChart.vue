@@ -177,9 +177,34 @@ const chartData = computed(() => {
   opacity: 1;
 }
 
-@media (max-width: 480px) {
+/* Tablet breakpoint */
+@media (max-width: 768px) {
+  .chart-grid {
+    grid-template-columns: repeat(8, 1fr);
+  }
+  
+  .chart-legend {
+    font-size: 0.75rem;
+    gap: 0.75rem;
+  }
+}
+
+/* Small tablet/large phone breakpoint */
+@media (max-width: 600px) {
   .chart-grid {
     grid-template-columns: repeat(7, 1fr);
+  }
+  
+  .chart-legend {
+    font-size: 0.7rem;
+    gap: 0.5rem;
+  }
+}
+
+/* Mobile breakpoint */
+@media (max-width: 480px) {
+  .chart-grid {
+    grid-template-columns: repeat(6, 1fr);
   }
   
   .chart-legend {
