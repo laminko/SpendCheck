@@ -28,6 +28,7 @@
 | user_id | text | | | ✓ | |
 | amount | numeric | | | ✓ | |
 | currency | text | 'USD' | | ✓ | |
+| category | text | | | | |
 | date | date | | | ✓ | |
 | created_at | timestamptz | now() | | ✓ | |
 
@@ -46,6 +47,7 @@ CREATE TABLE public.spending_entries (
     user_id text NOT NULL,
     amount numeric NOT NULL,
     currency text DEFAULT 'USD' NOT NULL,
+    category text,
     date date NOT NULL,
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
@@ -99,4 +101,5 @@ Run your app with `npm run dev` and try logging a spending entry. Check the Supa
 - RLS ensures users can only see/modify their own spending entries
 - The `amount` field stores currency values as numeric type for precision
 - The `currency` field stores the 3-letter currency code (USD, EUR, etc.)
+- The `category` field stores spending categories (optional, nullable for backward compatibility)
 - Mixed currencies are supported - each entry can have its own currency
