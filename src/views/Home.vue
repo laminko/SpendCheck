@@ -28,7 +28,7 @@
       <div class="main-content">
         <div class="tap-section">
           <div v-if="!showAmountInput && !todayLogged" class="spend-button-container">
-            <ion-button 
+            <ion-button
               shape="round"
               size="large"
               class="spend-button"
@@ -172,36 +172,36 @@ const todayAmount = computed(() => {
 
 const streak = computed(() => {
   if (entries.value.length === 0) return 0
-  
+
   let currentStreak = 0
   const today = new Date()
-  
+
   for (let i = 0; i < 365; i++) {
     const checkDate = new Date(today)
     checkDate.setDate(today.getDate() - i)
     const dateStr = checkDate.toISOString().split('T')[0]
-    
+
     if (entries.value.some(entry => entry.date === dateStr)) {
       currentStreak++
     } else {
       break
     }
   }
-  
+
   return currentStreak
 })
 
 const thisMonthDays = computed(() => {
   const now = new Date()
   const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-  
+
   return entries.value.filter(entry => entry.date >= firstDay).length
 })
 
 const thisMonthTotal = computed(() => {
   const now = new Date()
   const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-  
+
   return entries.value
     .filter(entry => entry.date >= firstDay)
     .reduce((sum, entry) => sum + entry.amount, 0)
@@ -219,19 +219,19 @@ const handleSpendButtonClick = async () => {
 
 const logSpending = async () => {
   if (!currentAmount.value) return
-  
+
   // Haptic feedback for save action
   try {
     await Haptics.impact({ style: ImpactStyle.Light })
   } catch (error) {
     // Haptics not available on web
   }
-  
+
   loading.value = true
   const today = new Date().toISOString().split('T')[0]
   const userId = await ensureValidSession()
   const amount = parseFloat(currentAmount.value)
-  
+
   try {
     if (todayLogged.value) {
       // Update existing entry
@@ -240,9 +240,9 @@ const logSpending = async () => {
         .update({ amount: amount, currency: currencyCode.value })
         .eq('user_id', userId)
         .eq('date', today)
-      
+
       if (error) throw error
-      
+
       // Update local data
       const entryIndex = entries.value.findIndex(entry => entry.date === today)
       if (entryIndex !== -1) {
@@ -261,12 +261,12 @@ const logSpending = async () => {
             date: today
           }
         ])
-      
+
       if (error) throw error
-      
+
       entries.value.push({ date: today, amount, currency: currencyCode.value })
     }
-    
+
     showAmountInput.value = false
     currentAmount.value = ''
   } catch (error) {
@@ -297,16 +297,16 @@ const onAmountBlur = () => {
 
 const loadEntries = async () => {
   const userId = await ensureValidSession()
-  
+
   try {
     const { data, error } = await supabase
       .from('spending_entries')
       .select('date, amount, currency')
       .eq('user_id', userId)
       .order('date', { ascending: false })
-    
+
     if (error) throw error
-    
+
     entries.value = data || []
   } catch (error) {
     console.error('Error loading entries:', error)
@@ -417,10 +417,13 @@ onMounted(() => {
 }
 
 .stat-number {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--ion-color-primary);
-  word-break: break-all;
+  word-break: keep-all;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .stat-label {
