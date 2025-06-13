@@ -1,7 +1,7 @@
 <template>
   <div class="spending-chart">
     <div class="chart-header">
-      <h3>Last 30 Days</h3>
+      <h3>Last 90 Days</h3>
       <ChartToggle :model-value="chartType" @change="updateChartType" />
     </div>
     
@@ -63,7 +63,11 @@ const chartData = computed(() => {
   const amounts = props.entries.map(e => e.amount)
   const maxAmount = Math.max(...amounts, 1)
   
-  for (let i = 29; i >= 0; i--) {
+  // Calculate 91 days to fill exactly 7 rows × 13 columns
+  const totalDays = 91
+  
+  // Start from 90 days ago to today (91 days total)
+  for (let i = totalDays - 1; i >= 0; i--) {
     const date = new Date(today)
     date.setDate(today.getDate() - i)
     const dateStr = date.toISOString().split('T')[0]
@@ -122,8 +126,11 @@ const chartData = computed(() => {
 
 .chart-grid {
   display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 0.25rem;
+  grid-template-columns: repeat(13, 1fr);
+  grid-template-rows: repeat(7, 1fr);
+  gap: 0.2rem;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .chart-day {
@@ -177,9 +184,42 @@ const chartData = computed(() => {
   opacity: 1;
 }
 
+/* Tablet breakpoint */
+@media (max-width: 768px) {
+  .chart-grid {
+    grid-template-columns: repeat(13, 1fr);
+    gap: 0.15rem;
+  }
+  
+  .chart-legend {
+    font-size: 0.75rem;
+    gap: 0.75rem;
+  }
+}
+
+/* Small tablet/large phone breakpoint */
+@media (max-width: 600px) {
+  .chart-grid {
+    grid-template-columns: repeat(13, 1fr);
+    gap: 0.1rem;
+  }
+  
+  .chart-legend {
+    font-size: 0.7rem;
+    gap: 0.5rem;
+  }
+}
+
+/* Mobile breakpoint */
 @media (max-width: 480px) {
   .chart-grid {
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(13, 1fr);
+    grid-template-rows: repeat(7, 1fr);
+    gap: 0.05rem;
+  }
+  
+  .chart-day {
+    border-radius: 2px;
   }
   
   .chart-legend {
