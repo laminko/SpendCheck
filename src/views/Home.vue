@@ -157,7 +157,7 @@ const { ensureValidSession } = useAuth()
 const { currencySymbol, currencyCode, loadSavedCurrency, formatAmount } = useCurrency()
 const showAmountInput = ref(false)
 const currentAmount = ref('')
-const amountInput = ref<HTMLInputElement>()
+const amountInput = ref()
 
 const todayLogged = computed(() => {
   const today = new Date().toISOString().split('T')[0]
@@ -284,7 +284,7 @@ const cancelAmount = () => {
 const editTodayAmount = () => {
   currentAmount.value = todayAmount.value
   showAmountInput.value = true
-  setTimeout(() => amountInput.value?.focus(), 100)
+  setTimeout(() => amountInput.value?.$el.setFocus(), 100)
 }
 
 const onAmountBlur = () => {
