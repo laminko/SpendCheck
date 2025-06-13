@@ -89,7 +89,7 @@ import { useCurrency } from '@/composables/useCurrency'
 
 const loading = ref(false)
 const entries = ref<Array<{ date: string, amount: number, currency: string }>>([])
-const { getCurrentUserId } = useAuth()
+const { ensureValidSession } = useAuth()
 const { currencySymbol, currencyCode, loadSavedCurrency, formatAmount } = useCurrency()
 const showAmountInput = ref(false)
 const currentAmount = ref('')
@@ -149,7 +149,7 @@ const logSpending = async () => {
   
   loading.value = true
   const today = new Date().toISOString().split('T')[0]
-  const userId = getCurrentUserId()
+  const userId = await ensureValidSession()
   const amount = parseFloat(currentAmount.value)
   
   try {
@@ -216,7 +216,7 @@ const onAmountBlur = () => {
 }
 
 const loadEntries = async () => {
-  const userId = getCurrentUserId()
+  const userId = await ensureValidSession()
   
   try {
     const { data, error } = await supabase
