@@ -20,20 +20,21 @@ const defaultCategories = [
 ]
 
 export function useCategoryStore() {
-  const { userId } = useAuth()
+  const { userId, ensureValidSession } = useAuth()
 
   // Load categories for the current user
   const loadCategories = async () => {
-    if (!userId.value) return
-
     try {
       isLoading.value = true
       error.value = null
 
+      // Ensure we have a valid user session
+      const currentUserId = await ensureValidSession()
+      
       const { data, error: fetchError } = await supabase
         .from('categories')
         .select('*')
-        .eq('user_id', userId.value)
+        .eq('user_id', currentUserId)
         .order('is_default', { ascending: false })
         .order('name', { ascending: true })
 
@@ -43,7 +44,7 @@ export function useCategoryStore() {
 
       // If no categories exist, seed default categories
       if (categories.value.length === 0) {
-        await seedDefaultCategories()
+        await seedDefaultCategories(currentUserId)
       }
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load categories'
@@ -54,12 +55,10 @@ export function useCategoryStore() {
   }
 
   // Seed default categories for new users
-  const seedDefaultCategories = async () => {
-    if (!userId.value) return
-
+  const seedDefaultCategories = async (currentUserId: string) => {
     try {
       const categoriesToInsert = defaultCategories.map(cat => ({
-        user_id: userId.value!,
+        user_id: currentUserId,
         name: cat.name,
         icon: cat.icon,
         color: cat.color,
@@ -82,20 +81,23 @@ export function useCategoryStore() {
 
   // Add a new category
   const addCategory = async (categoryData: { name: string; icon?: string; color?: string }) => {
-    if (!userId.value) return null
-
     try {
       error.value = null
 
+      // Ensure we have a valid user session
+      const currentUserId = await ensureValidSession()
+
+      const insertData = {
+        user_id: currentUserId,
+        name: categoryData.name,
+        icon: categoryData.icon || null,
+        color: categoryData.color || null,
+        is_default: false
+      }
+
       const { data, error: insertError } = await supabase
         .from('categories')
-        .insert([{
-          user_id: userId.value,
-          name: categoryData.name,
-          icon: categoryData.icon || null,
-          color: categoryData.color || null,
-          is_default: false
-        }])
+        .insert([insertData])
         .select()
         .single()
 
