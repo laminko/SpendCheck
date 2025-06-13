@@ -4,7 +4,7 @@
       <ion-toolbar>
         <ion-title>
           <div class="logo-title">
-            <img src="/logo.svg" alt="SpendCheck Logo" class="logo" />
+            <img src="/logo.png" alt="SpendCheck Logo" class="logo" />
             SpendCheck
           </div>
         </ion-title>
@@ -15,11 +15,6 @@
     </ion-header>
 
     <ion-content :fullscreen="true" class="ion-padding">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">SpendCheck</ion-title>
-        </ion-toolbar>
-      </ion-header>
 
       <div class="subtitle">
         <p>Did you spend money today?</p>
@@ -35,9 +30,8 @@
             >
               <ion-icon :icon="cardOutline" class="card-icon"></ion-icon>
               <div class="button-text">
-                TAP IF YOU<br>
-                SPENT<br>
-                TODAY
+                Any spending?<br>
+                Tap to track!
               </div>
             </button>
           </div>
@@ -68,14 +62,6 @@
         </div>
 
         <SpendingChart :entries="entries" />
-
-        <div class="ad-space">
-          <ion-card>
-            <ion-card-content class="ion-text-center">
-              <p class="ad-placeholder">Ad Space</p>
-            </ion-card-content>
-          </ion-card>
-        </div>
       </div>
     </ion-content>
 
@@ -178,9 +164,9 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
 
     if (error) throw error
 
-    entries.value.push({ 
-      date: today, 
-      amount, 
+    entries.value.push({
+      date: today,
+      amount,
       currency: currencyCode.value,
       category,
       category_id: categoryId
@@ -223,6 +209,7 @@ onMounted(() => {
 .logo-title {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 0.75rem;
 }
 
@@ -304,28 +291,6 @@ onMounted(() => {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.amount-input-container {
-  display: flex;
-  justify-content: center;
-}
-
-.amount-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-top: 1rem;
-}
-
-.logged-icon {
-  color: var(--ion-color-success);
-  margin-bottom: 0.5rem;
-}
-
-.logged-text {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin: 0.5rem 0;
-}
 
 .stat-card {
   margin: 0;
@@ -347,23 +312,17 @@ onMounted(() => {
   margin-top: 0.25rem;
 }
 
-.ad-placeholder {
-  color: var(--ion-color-medium);
-  font-size: 0.9rem;
-  margin: 0;
-}
-
 /* Mobile optimizations */
 @media (max-width: 768px) {
   .circular-spend-button {
     width: 240px;
     height: 240px;
   }
-  
+
   .card-icon {
     font-size: 2.5rem;
   }
-  
+
   .button-text {
     font-size: 1rem;
   }
@@ -374,15 +333,15 @@ onMounted(() => {
     width: 200px;
     height: 200px;
   }
-  
+
   .card-icon {
     font-size: 2rem;
   }
-  
+
   .button-text {
     font-size: 0.9rem;
   }
-  
+
   .tap-section {
     min-height: 150px;
   }

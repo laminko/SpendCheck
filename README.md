@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/logo.svg" alt="SpendCheck Logo" width="120" height="120">
+  <img src="public/logo.png" alt="SpendCheck Logo" width="120" height="120">
   
   # SpendCheck
 </div>

@@ -11,9 +11,8 @@
       <div class="dialog-content">
         <!-- Amount Input -->
         <div class="amount-section">
-          <label for="amount">Amount</label>
-          <div class="amount-input-wrapper">
-            <span class="currency-symbol">{{ currencySymbol }}</span>
+          <ion-item>
+            <ion-label position="stacked">Amount ({{ currencySymbol }})</ion-label>
             <ion-input
               ref="amountInput"
               v-model="amount"
@@ -21,41 +20,42 @@
               placeholder="0.00"
               step="0.01"
               min="0"
-              class="amount-input"
             />
-          </div>
+          </ion-item>
         </div>
 
         <!-- Category Selector -->
         <div class="category-section">
-          <label for="category">Category</label>
-          <ion-select
-            v-model="selectedCategory"
-            placeholder="Select category"
-            interface="action-sheet"
-            class="category-select"
-          >
-            <ion-select-option
-              v-for="category in categories"
-              :key="category.id"
-              :value="category.id"
+          <ion-item>
+            <ion-label position="stacked">Category</ion-label>
+            <ion-select
+              v-model="selectedCategory"
+              placeholder="Select category (optional)"
+              interface="action-sheet"
             >
-              {{ category.icon }} {{ category.name }}
-            </ion-select-option>
-            <ion-select-option value="custom">
-              ➕ Add new category
-            </ion-select-option>
-          </ion-select>
+              <ion-select-option
+                v-for="category in categories"
+                :key="category.id"
+                :value="category.id"
+              >
+                {{ category.icon }} {{ category.name }}
+              </ion-select-option>
+              <ion-select-option value="custom">
+                ➕ Add new category
+              </ion-select-option>
+            </ion-select>
+          </ion-item>
         </div>
 
         <!-- Custom Category Input (shown when "Add new category" is selected) -->
         <div v-if="selectedCategory === 'custom'" class="custom-category-section">
-          <label for="customCategory">New Category Name</label>
-          <ion-input
-            v-model="customCategory"
-            placeholder="Enter category name"
-            class="custom-category-input"
-          />
+          <ion-item>
+            <ion-label position="stacked">New Category Name</ion-label>
+            <ion-input
+              v-model="customCategory"
+              placeholder="Enter category name"
+            />
+          </ion-item>
         </div>
       </div>
 
@@ -68,7 +68,9 @@
           color="primary" 
           @click="saveSpending"
           :disabled="!isValid"
+          strong
         >
+          <ion-icon :icon="checkmarkOutline" slot="start"></ion-icon>
           Save
         </ion-button>
       </div>
@@ -84,9 +86,11 @@ import {
   IonIcon, 
   IonInput, 
   IonSelect, 
-  IonSelectOption 
+  IonSelectOption,
+  IonItem,
+  IonLabel
 } from '@ionic/vue'
-import { closeOutline } from 'ionicons/icons'
+import { closeOutline, checkmarkOutline } from 'ionicons/icons'
 import { useCurrency } from '@/composables/useCurrency'
 import { useCategoryStore } from '@/composables/useCategoryStore'
 
@@ -204,7 +208,7 @@ watch(() => props.isOpen, (isOpen) => {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--ion-color-primary);
 }
 
 .dialog-content {
@@ -217,70 +221,26 @@ watch(() => props.isOpen, (isOpen) => {
 .amount-section,
 .category-section,
 .custom-category-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+  margin-bottom: 1rem;
 }
 
-label {
-  font-weight: 500;
-  color: #374151;
-  font-size: 0.9rem;
-}
-
-.amount-input-wrapper {
-  display: flex;
-  align-items: center;
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 0.5rem 1rem;
-  background: white;
-}
-
-.amount-input-wrapper:focus-within {
-  border-color: #3b82f6;
-}
-
-.currency-symbol {
-  font-weight: 600;
-  color: #6b7280;
-  margin-right: 0.5rem;
-}
-
-.amount-input {
-  flex: 1;
-  font-size: 1.1rem;
-  font-weight: 500;
-}
-
-.amount-input ion-input {
-  --padding: 0;
-  --border: none;
-  --box-shadow: none;
-}
-
-.category-select,
-.custom-category-input {
-  border: 2px solid #e5e7eb;
-  border-radius: 8px;
-  --padding: 0.75rem 1rem;
-}
-
-.category-select:focus-within,
-.custom-category-input:focus-within {
-  border-color: #3b82f6;
+.amount-section ion-item,
+.category-section ion-item,
+.custom-category-section ion-item {
+  --border-radius: 12px;
+  --background: var(--ion-color-light);
+  margin-bottom: 0.5rem;
 }
 
 .dialog-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
+  gap: 0.5rem;
   margin-top: 2rem;
-  padding-top: 1rem;
-  border-top: 1px solid #e5e7eb;
+  padding-top: 1.5rem;
 }
 
 .dialog-actions ion-button {
-  min-width: 80px;
+  min-width: 100px;
 }
 </style>
