@@ -11,7 +11,7 @@
 [![Supabase](https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 [![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)](https://vercel.com/)
 
-> **Modern spending tracker with categories** - Tap the circular button to log spending with categories, see patterns in GitHub-style activity grid. Built with Vue 3 and Supabase.
+> **Simple spending tracker app** - Just tap if you spent money today, see spending patterns. Built with Vue 3 and Supabase.
 
 ## ✨ Features
 
