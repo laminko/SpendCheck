@@ -137,10 +137,10 @@ const chartData = computed(() => {
     date.setDate(today.getDate() - i)
     const dateStr = date.toISOString().split('T')[0]
     
-    const entry = props.entries.find(entry => entry.date === dateStr)
-    const hasSpending = !!entry
-    const amount = entry?.amount || 0
-    const currency = entry?.currency || '$'
+    const dayEntries = props.entries.filter(entry => entry.date === dateStr)
+    const hasSpending = dayEntries.length > 0
+    const amount = dayEntries.reduce((sum, entry) => sum + entry.amount, 0)
+    const currency = dayEntries[0]?.currency || '$'
     
     data.push({
       date: dateStr,
