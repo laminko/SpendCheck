@@ -1,7 +1,7 @@
 <template>
   <div class="spending-chart">
     <div class="chart-header">
-      <h3>Last 90 Days</h3>
+      <h3>Last 14 Weeks</h3>
       <ChartToggle :model-value="chartType" @change="updateChartType" />
     </div>
     
@@ -64,26 +64,29 @@ const chartData = computed(() => {
   const amounts = props.entries.map(e => e.amount)
   const maxAmount = Math.max(...amounts, 1)
   
-  // Create a 7×13 grid (91 cells) arranged by weeks
-  const grid = Array(91).fill(null)
+  // Create a 7×14 grid (98 cells) arranged by days (rows) and weeks (columns)
+  const grid = Array(98).fill(null)
   const today = new Date()
   
-  // Calculate the start date to fill 13 weeks
-  const startDate = new Date(today)
-  startDate.setDate(today.getDate() - 90) // 90 days ago
+  // Find the Sunday of the current week (week containing today)
+  const todaySunday = new Date(today)
+  const daysSinceLastSunday = today.getDay() // 0 = Sunday, 1 = Monday, etc.
+  todaySunday.setDate(today.getDate() - daysSinceLastSunday)
   
-  // Find the Sunday before or on the start date
-  const startSunday = new Date(startDate)
-  const daysSinceLastSunday = startDate.getDay() // 0 = Sunday, 1 = Monday, etc.
-  startSunday.setDate(startDate.getDate() - daysSinceLastSunday)
+  // Calculate the start Sunday (13 weeks before today's Sunday)
+  const startSunday = new Date(todaySunday)
+  startSunday.setDate(todaySunday.getDate() - (13 * 7)) // 13 weeks back (14 weeks total including current week)
   
-  // Fill the grid with proper week arrangement
-  for (let week = 0; week < 13; week++) {
+  // Calculate the actual start date for filtering
+  const startDate = new Date(startSunday)
+  
+  // Fill the grid with proper day arrangement (rows = days, columns = weeks)
+  for (let week = 0; week < 14; week++) {
     for (let day = 0; day < 7; day++) { // 0 = Sunday, 6 = Saturday
       const currentDate = new Date(startSunday)
       currentDate.setDate(startSunday.getDate() + (week * 7) + day)
       
-      const gridIndex = week * 7 + day
+      const gridIndex = day * 14 + week // day * 14 + week (row * columns + column)
       const dateStr = currentDate.toISOString().split('T')[0]
       
       // Only include dates within our range
@@ -155,7 +158,7 @@ const chartData = computed(() => {
 
 .chart-grid {
   display: grid;
-  grid-template-columns: repeat(13, 1fr);
+  grid-template-columns: repeat(14, 1fr);
   grid-template-rows: repeat(7, 1fr);
   gap: 0.2rem;
   max-width: 100%;
@@ -225,7 +228,8 @@ const chartData = computed(() => {
 /* Tablet breakpoint */
 @media (max-width: 768px) {
   .chart-grid {
-    grid-template-columns: repeat(13, 1fr);
+    grid-template-columns: repeat(14, 1fr);
+    grid-template-rows: repeat(7, 1fr);
     gap: 0.15rem;
   }
   
@@ -238,7 +242,8 @@ const chartData = computed(() => {
 /* Small tablet/large phone breakpoint */
 @media (max-width: 600px) {
   .chart-grid {
-    grid-template-columns: repeat(13, 1fr);
+    grid-template-columns: repeat(14, 1fr);
+    grid-template-rows: repeat(7, 1fr);
     gap: 0.1rem;
   }
   
@@ -251,7 +256,7 @@ const chartData = computed(() => {
 /* Mobile breakpoint */
 @media (max-width: 480px) {
   .chart-grid {
-    grid-template-columns: repeat(13, 1fr);
+    grid-template-columns: repeat(14, 1fr);
     grid-template-rows: repeat(7, 1fr);
     gap: 0.05rem;
   }
