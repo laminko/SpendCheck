@@ -1,86 +1,150 @@
 <template>
-  <div class="home">
-    <header class="header">
-      <div class="header-top">
-        <div class="logo-title">
-          <img src="/logo.svg" alt="SpendCheck Logo" class="logo" />
-          <h1>SpendCheck</h1>
-        </div>
-        <CurrencyPicker />
-      </div>
-      <p>Did you spend money today?</p>
-    </header>
-
-    <main class="main">
-      <div class="tap-section">
-        <div v-if="!showAmountInput && !todayLogged" class="spend-button-container">
-          <button 
-            class="spend-button"
-            @click="showAmountInput = true"
-            :disabled="loading"
-          >
-            <div class="button-content">
-              <div class="icon">💳</div>
-              <div class="text">Tap if you spent today</div>
-            </div>
-          </button>
-        </div>
-
-        <div v-else-if="showAmountInput" class="amount-input-container">
-          <div class="amount-input-wrapper">
-            <span class="currency">{{ currencySymbol }}</span>
-            <input 
-              ref="amountInput"
-              v-model="currentAmount" 
-              type="number" 
-              step="0.01"
-              placeholder="0.00"
-              class="amount-input"
-              @keyup.enter="logSpending"
-              @blur="onAmountBlur"
-            />
+  <ion-page>
+    <ion-header :translucent="true">
+      <ion-toolbar>
+        <ion-title>
+          <div class="logo-title">
+            <img src="/logo.svg" alt="SpendCheck Logo" class="logo" />
+            SpendCheck
           </div>
-          <div class="amount-actions">
-            <button @click="cancelAmount" class="cancel-btn">Cancel</button>
-            <button @click="logSpending" :disabled="!currentAmount || loading" class="save-btn">
-              {{ todayLogged ? 'Update' : 'Save' }}
-            </button>
+        </ion-title>
+        <ion-buttons slot="end">
+          <CurrencyPicker />
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+
+    <ion-content :fullscreen="true" class="ion-padding">
+      <ion-header collapse="condense">
+        <ion-toolbar>
+          <ion-title size="large">SpendCheck</ion-title>
+        </ion-toolbar>
+      </ion-header>
+
+      <div class="subtitle">
+        <p>Did you spend money today?</p>
+      </div>
+
+      <div class="main-content">
+        <div class="tap-section">
+          <div v-if="!showAmountInput && !todayLogged" class="spend-button-container">
+            <ion-button 
+              shape="round"
+              size="large"
+              class="spend-button"
+              @click="handleSpendButtonClick"
+              :disabled="loading"
+            >
+              <div class="button-content">
+                <div class="icon">💳</div>
+                <div class="text">Tap if you spent today</div>
+              </div>
+            </ion-button>
+          </div>
+
+          <div v-else-if="showAmountInput" class="amount-input-container">
+            <ion-card>
+              <ion-card-content>
+                <ion-item>
+                  <ion-label position="stacked">Amount ({{ currencySymbol }})</ion-label>
+                  <ion-input
+                    ref="amountInput"
+                    v-model="currentAmount"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    @keyup.enter="logSpending"
+                    @ion-blur="onAmountBlur"
+                  ></ion-input>
+                </ion-item>
+                <div class="amount-actions">
+                  <ion-button fill="clear" @click="cancelAmount">Cancel</ion-button>
+                  <ion-button @click="logSpending" :disabled="!currentAmount || loading">
+                    {{ todayLogged ? 'Update' : 'Save' }}
+                  </ion-button>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <div v-else class="logged-container">
+            <ion-card color="success">
+              <ion-card-content class="ion-text-center">
+                <ion-icon :icon="checkmarkCircle" size="large" class="logged-icon"></ion-icon>
+                <p class="logged-text">{{ formatAmount(parseFloat(todayAmount)) }} logged for today!</p>
+                <ion-button fill="clear" @click="editTodayAmount">Edit</ion-button>
+              </ion-card-content>
+            </ion-card>
           </div>
         </div>
 
-        <div v-else class="logged-container">
-          <div class="logged-icon">✓</div>
-          <div class="logged-text">{{ formatAmount(parseFloat(todayAmount)) }} logged for today!</div>
-          <button @click="editTodayAmount" class="edit-btn">Edit</button>
+        <div class="stats-section">
+          <ion-grid>
+            <ion-row>
+              <ion-col size="4">
+                <ion-card class="stat-card">
+                  <ion-card-content class="ion-text-center">
+                    <div class="stat-number">{{ streak }}</div>
+                    <div class="stat-label">Current Streak</div>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+              <ion-col size="4">
+                <ion-card class="stat-card">
+                  <ion-card-content class="ion-text-center">
+                    <div class="stat-number">{{ thisMonthDays }}</div>
+                    <div class="stat-label">Days This Month</div>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+              <ion-col size="4">
+                <ion-card class="stat-card">
+                  <ion-card-content class="ion-text-center">
+                    <div class="stat-number">{{ formatAmount(parseFloat(thisMonthTotal), undefined, true) }}</div>
+                    <div class="stat-label">Total This Month</div>
+                  </ion-card-content>
+                </ion-card>
+              </ion-col>
+            </ion-row>
+          </ion-grid>
+        </div>
+
+        <SpendingChart :entries="entries" />
+
+        <div class="ad-space">
+          <ion-card>
+            <ion-card-content class="ion-text-center">
+              <p class="ad-placeholder">Ad Space</p>
+            </ion-card-content>
+          </ion-card>
         </div>
       </div>
-
-      <div class="stats-section">
-        <div class="stat">
-          <div class="stat-number">{{ streak }}</div>
-          <div class="stat-label">Current Streak</div>
-        </div>
-        <div class="stat">
-          <div class="stat-number">{{ thisMonthDays }}</div>
-          <div class="stat-label">Days This Month</div>
-        </div>
-        <div class="stat">
-          <div class="stat-number">{{ formatAmount(parseFloat(thisMonthTotal), undefined, true) }}</div>
-          <div class="stat-label">Total This Month</div>
-        </div>
-      </div>
-
-      <SpendingChart :entries="entries" />
-
-      <div class="ad-space">
-        <div class="ad-placeholder">Ad Space</div>
-      </div>
-    </main>
-  </div>
+    </ion-content>
+  </ion-page>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
+import {
+  IonPage,
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButtons,
+  IonButton,
+  IonCard,
+  IonCardContent,
+  IonItem,
+  IonLabel,
+  IonInput,
+  IonIcon,
+  IonGrid,
+  IonRow,
+  IonCol
+} from '@ionic/vue'
+import { checkmarkCircle } from 'ionicons/icons'
+import { Haptics, ImpactStyle } from '@capacitor/haptics'
 import { supabase } from '@/lib/supabase'
 import SpendingChart from '@/components/SpendingChart.vue'
 import CurrencyPicker from '@/components/CurrencyPicker.vue'
@@ -144,8 +208,24 @@ const thisMonthTotal = computed(() => {
     .toFixed(2)
 })
 
+const handleSpendButtonClick = async () => {
+  try {
+    await Haptics.impact({ style: ImpactStyle.Medium })
+  } catch (error) {
+    // Haptics not available on web
+  }
+  showAmountInput.value = true
+}
+
 const logSpending = async () => {
   if (!currentAmount.value) return
+  
+  // Haptic feedback for save action
+  try {
+    await Haptics.impact({ style: ImpactStyle.Light })
+  } catch (error) {
+    // Haptics not available on web
+  }
   
   loading.value = true
   const today = new Date().toISOString().split('T')[0]
@@ -240,28 +320,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.home {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  padding: 1rem;
-  max-width: 400px;
-  margin: 0 auto;
-}
-
-.header {
-  text-align: center;
-  padding: 2rem 0;
-}
-
-.header-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  position: relative;
-}
-
 .logo-title {
   display: flex;
   align-items: center;
@@ -269,189 +327,43 @@ onMounted(() => {
 }
 
 .logo {
-  width: 40px;
-  height: 40px;
+  width: 32px;
+  height: 32px;
 }
 
-.header h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #1f2937;
-  margin: 0;
+.subtitle {
+  text-align: center;
+  padding: 1rem 0;
 }
 
-.header p {
-  color: #6b7280;
+.subtitle p {
+  color: var(--ion-color-medium);
   font-size: 1.1rem;
 }
 
-.main {
-  flex: 1;
+.main-content {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .tap-section {
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 200px;
-  position: relative;
-  z-index: 1;
 }
 
 .spend-button {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%;
-  border: none;
-  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
-  color: white;
-  font-size: 1.1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 25px rgba(59, 130, 246, 0.3);
+  --width: 200px;
+  --height: 200px;
+  --border-radius: 50%;
+  --background: linear-gradient(135deg, var(--ion-color-primary) 0%, var(--ion-color-primary-shade) 100%);
+  --box-shadow: 0 10px 25px rgba(var(--ion-color-primary-rgb), 0.3);
 }
 
 .spend-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
-}
-
-.spend-button:active {
-  transform: translateY(0);
-}
-
-.amount-input-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 2rem;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  max-width: 280px;
-  width: 100%;
-}
-
-.amount-input-wrapper {
-  display: flex;
-  align-items: center;
-  background: #f8fafc;
-  border-radius: 12px;
-  padding: 0.5rem 1rem;
-  border: 2px solid #e2e8f0;
-  transition: border-color 0.2s;
-}
-
-.amount-input-wrapper:focus-within {
-  border-color: #3b82f6;
-}
-
-.currency {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-  margin-right: 0.5rem;
-}
-
-.amount-input {
-  border: none;
-  background: transparent;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1f2937;
-  outline: none;
-  width: 120px;
-  text-align: left;
-}
-
-.amount-input::placeholder {
-  color: #9ca3af;
-}
-
-.amount-actions {
-  display: flex;
-  gap: 1rem;
-}
-
-.cancel-btn, .save-btn {
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.cancel-btn {
-  background: #f3f4f6;
-  color: #6b7280;
-}
-
-.cancel-btn:hover {
-  background: #e5e7eb;
-}
-
-.save-btn {
-  background: #3b82f6;
-  color: white;
-}
-
-.save-btn:hover:not(:disabled) {
-  background: #2563eb;
-}
-
-.save-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.logged-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-  padding: 2rem;
-  background: white;
-  border-radius: 20px;
-  box-shadow: 0 10px 25px rgba(16, 185, 129, 0.1);
-  border: 2px solid #10b981;
-}
-
-.logged-icon {
-  font-size: 3rem;
-  color: #10b981;
-}
-
-.logged-text {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #1f2937;
-  text-align: center;
-}
-
-.edit-btn {
-  background: #10b981;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.edit-btn:hover {
-  background: #059669;
-}
-
-.spend-button:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+  --box-shadow: 0 15px 35px rgba(var(--ion-color-primary-rgb), 0.4);
 }
 
 .button-content {
@@ -471,64 +383,57 @@ onMounted(() => {
   line-height: 1.3;
 }
 
-.stats-section {
+.amount-input-container {
   display: flex;
-  gap: 0.75rem;
   justify-content: center;
-  flex-wrap: wrap;
 }
 
-.stat {
-  text-align: center;
-  padding: 0.75rem;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  min-width: 70px;
-  flex: 1;
-  max-width: 100px;
+.amount-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.logged-icon {
+  color: var(--ion-color-success);
+  margin-bottom: 0.5rem;
+}
+
+.logged-text {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0.5rem 0;
+}
+
+.stat-card {
+  margin: 0;
 }
 
 .stat-number {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #1f2937;
+  color: var(--ion-color-primary);
   word-break: break-all;
 }
 
 .stat-label {
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--ion-color-medium);
   margin-top: 0.25rem;
 }
 
-.ad-space {
-  margin-top: auto;
-  padding: 1rem 0;
-}
-
 .ad-placeholder {
-  background: #f3f4f6;
-  border: 2px dashed #d1d5db;
-  border-radius: 8px;
-  padding: 2rem;
-  text-align: center;
-  color: #9ca3af;
+  color: var(--ion-color-medium);
   font-size: 0.9rem;
+  margin: 0;
 }
 
+/* Mobile optimizations */
 @media (max-width: 480px) {
-  .home {
-    padding: 0.5rem;
-  }
-  
   .spend-button {
-    width: 180px;
-    height: 180px;
-  }
-  
-  .stats-section {
-    gap: 0.5rem;
+    --width: 180px;
+    --height: 180px;
   }
 }
 </style>
