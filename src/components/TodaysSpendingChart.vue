@@ -25,6 +25,7 @@ import { computed } from 'vue'
 import { IonIcon } from '@ionic/vue'
 import { barChartOutline } from 'ionicons/icons'
 import { useCurrency } from '@/composables/useCurrency'
+import { useDateUtils } from '@/composables/useDateUtils'
 import {
   Chart as ChartJS,
   ArcElement,
@@ -46,6 +47,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const { formatAmount } = useCurrency()
+const { getTodayString, toLocalDateString } = useDateUtils()
 
 // Apple Design System colors for charts
 const chartColors = [
@@ -65,8 +67,12 @@ const chartColors = [
 
 // Today's category spending data
 const todayCategoryData = computed(() => {
-  const today = new Date().toISOString().split('T')[0]
-  const todayEntries = props.entries.filter(entry => entry.date === today)
+  const today = getTodayString()
+  const todayEntries = props.entries.filter(entry => {
+    // Convert UTC date from backend to local timezone and format as YYYY-MM-DD
+    const entryLocalDate = toLocalDateString(entry.date)
+    return entryLocalDate === today
+  })
   
   if (todayEntries.length === 0) {
     return { labels: [], datasets: [] }
