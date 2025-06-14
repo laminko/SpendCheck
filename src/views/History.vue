@@ -140,7 +140,6 @@ const formatDate = (dateString: string, createdAt?: string) => {
       const diffMs = now.getTime() - createdDate.getTime()
       const diffMins = Math.floor(diffMs / (1000 * 60))
       const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-      const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
 
       if (diffMins < 1) {
         return 'Just now'
