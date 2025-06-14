@@ -8,23 +8,12 @@
 
     <ion-content :fullscreen="true" class="ion-padding">
       <!-- Total This Month Summary -->
-      <ion-card class="summary-card">
-        <ion-card-content>
-          <div class="summary-content">
-            <div class="summary-label">
-              Total This Month
-            </div>
-            <div class="summary-amount">
-              {{ formatAmount(currentMonthTotal) }}
-            </div>
-            <div class="summary-change" v-if="monthlyChangePercentage !== null">
-              <span :class="monthlyChangePercentage >= 0 ? 'change-positive' : 'change-negative'">
-                {{ monthlyChangePercentage >= 0 ? '+' : '' }}{{ monthlyChangePercentage }}% from last month
-              </span>
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
+      <SummaryCard
+        label="Total This Month"
+        :amount="formatAmount(currentMonthTotal)"
+        :change="monthlyChangePercentage !== null ? `${monthlyChangePercentage >= 0 ? '+' : ''}${monthlyChangePercentage}% from last month` : undefined"
+        :change-value="monthlyChangePercentage || 0"
+      />
 
       <!-- Analytics title -->
       <div class="analytics-header">
@@ -54,14 +43,14 @@
         <div class="chart-card daily-spending-card">
           <div v-if="currentMonthChartData.datasets.length > 0 && currentMonthChartData.datasets.some(dataset => dataset.data.some(val => val > 0))" class="daily-spending-container">
             <Bar :data="currentMonthChartData" :options="monthlyChartOptions" />
-            <div class="peak-day-info" v-if="peakDay.amount > 0">
-              <span class="peak-label">Peak day: {{ peakDay.monthName }} {{ peakDay.day }}</span>
-              <span class="peak-amount">{{ formatAmount(peakDay.amount) }}</span>
-            </div>
           </div>
           <div v-else class="empty-chart">
             <ion-icon :icon="barChartOutline" class="empty-icon"></ion-icon>
             <p>No spending data for {{ getCurrentMonthTitle() }}</p>
+          </div>
+          <div class="peak-spending-info" v-if="peakDay.amount > 0">
+            <span class="peak-spending-label">Peak spending: <strong>{{ peakDay.monthName }} {{ peakDay.day }}</strong></span>
+            <span class="peak-spending-amount">{{ formatAmount(peakDay.amount) }}</span>
           </div>
         </div>
       </div>
@@ -77,10 +66,9 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
-  IonCard,
-  IonCardContent,
   IonIcon
 } from '@ionic/vue'
+import SummaryCard from '@/components/SummaryCard.vue'
 import { barChartOutline } from 'ionicons/icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/composables/useAuth'
@@ -131,7 +119,8 @@ const chartColors = [
 
 const getCurrentMonthTitle = () => {
   const now = new Date()
-  return now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  const monthYear = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+  return `This Month's Spending (${monthYear})`
 }
 
 // Calculate current month total
@@ -253,22 +242,29 @@ const currentMonthChartData = computed(() => {
 // Peak day calculation
 const peakDay = computed(() => {
   const now = new Date()
-  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
-  const daysInMonth = lastDay.getDate()
+  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+  
+  // Filter entries for current month
+  const currentMonthEntries = entries.value.filter(entry => entry.date >= firstDay && entry.date <= lastDay)
+  
+  // Group by date and find peak
+  const dailyTotals: Record<string, number> = {}
+  currentMonthEntries.forEach(entry => {
+    dailyTotals[entry.date] = (dailyTotals[entry.date] || 0) + entry.amount
+  })
   
   let maxAmount = 0
-  let peakDayNumber = 0
+  let peakDate = ''
   
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = new Date(now.getFullYear(), now.getMonth(), day).toISOString().split('T')[0]
-    const dayEntries = entries.value.filter(entry => entry.date === dateStr)
-    const amount = dayEntries.reduce((sum, entry) => sum + entry.amount, 0)
-    
+  Object.entries(dailyTotals).forEach(([date, amount]) => {
     if (amount > maxAmount) {
       maxAmount = amount
-      peakDayNumber = day
+      peakDate = date
     }
-  }
+  })
+  
+  const peakDayNumber = peakDate ? new Date(peakDate).getDate() : 0
   
   return {
     day: peakDayNumber,
@@ -496,52 +492,6 @@ onMounted(() => {
   line-height: 1.2;
 }
 
-.summary-card {
-  margin: 1rem 0 1.5rem 0;
-  background: linear-gradient(135deg, #007AFF 0%, #0056CC 100%);
-  border-radius: 16px;
-  box-shadow: 0 4px 24px rgba(0, 122, 255, 0.25);
-  border: none;
-}
-
-.summary-content {
-  text-align: center;
-  color: white;
-  padding: 1rem;
-}
-
-.summary-amount {
-  font-size: 2.25rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
-  letter-spacing: -0.45px;
-  line-height: 1.1;
-}
-
-.summary-label {
-  font-size: 1rem;
-  opacity: 0.9;
-  font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-  letter-spacing: -0.24px;
-  margin-bottom: 0.5rem;
-}
-
-.summary-change {
-  font-size: 0.875rem;
-  font-weight: 500;
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
-  letter-spacing: -0.24px;
-}
-
-.change-positive {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.change-negative {
-  color: rgba(255, 255, 255, 0.8);
-}
 
 .chart-section {
   margin: 1.5rem 0;
@@ -570,34 +520,33 @@ onMounted(() => {
 }
 
 .daily-spending-card {
-  background: #FAFAFA;
-  border: none;
-  border-radius: 20px;
+  background: #FFFFFF;
+  border: 1px solid #E5E5EA;
+  border-radius: 16px;
 }
 
 .daily-spending-container {
-  padding: 2rem 1.5rem 1rem 1.5rem;
+  padding: 2rem 1.5rem 0.5rem 1.5rem;
   height: 220px;
   position: relative;
 }
 
-.peak-day-info {
+.peak-spending-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 1rem;
-  padding-top: 1rem;
+  padding: 0.5rem 1.5rem 1rem 1.5rem;
 }
 
-.peak-label {
+.peak-spending-label {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
   font-size: 15px;
   font-weight: 400;
-  color: #8E8E93;
+  color: #1C1C1E;
   letter-spacing: -0.24px;
 }
 
-.peak-amount {
+.peak-spending-amount {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
   font-size: 17px;
   font-weight: 600;
@@ -649,11 +598,11 @@ onMounted(() => {
     padding: 1.5rem 1rem 1rem 1rem;
   }
   
-  .peak-label {
+  .peak-spending-label {
     font-size: 14px;
   }
   
-  .peak-amount {
+  .peak-spending-amount {
     font-size: 16px;
   }
   
@@ -665,9 +614,6 @@ onMounted(() => {
     font-size: 1.5rem;
   }
   
-  .summary-amount {
-    font-size: 1.875rem;
-  }
   
   .chart-card {
     border-radius: 12px;

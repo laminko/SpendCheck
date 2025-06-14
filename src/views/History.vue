@@ -9,21 +9,12 @@
     <ion-content :fullscreen="true" class="ion-padding">
 
       <!-- Summary card -->
-      <ion-card class="summary-card" v-if="filteredEntries.length > 0">
-        <ion-card-content>
-          <div class="summary-content">
-            <div class="summary-amount">
-              {{ formatAmount(totalAmount) }}
-            </div>
-            <div class="summary-label">
-              Total Last 7 Days
-            </div>
-            <div class="summary-count">
-              {{ filteredEntries.length }} transaction{{ filteredEntries.length !== 1 ? 's' : '' }}
-            </div>
-          </div>
-        </ion-card-content>
-      </ion-card>
+      <SummaryCard
+        v-if="filteredEntries.length > 0"
+        label="Total Last 7 Days"
+        :amount="formatAmount(totalAmount)"
+        :count="`${filteredEntries.length} transaction${filteredEntries.length !== 1 ? 's' : ''}`"
+      />
 
       <!-- Entries list grouped by date -->
       <div v-if="groupedEntries.length > 0" class="entries-section">
@@ -83,8 +74,6 @@ import {
   IonToolbar,
   IonTitle,
   IonContent,
-  IonCard,
-  IonCardContent,
   IonIcon,
   IonItem,
   IonItemSliding,
@@ -96,6 +85,7 @@ import {
   alertController,
   toastController
 } from '@ionic/vue'
+import SummaryCard from '@/components/SummaryCard.vue'
 import { receiptOutline, trashOutline } from 'ionicons/icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/composables/useAuth'
@@ -287,32 +277,6 @@ watch(() => route.path, (newPath) => {
 </script>
 
 <style scoped>
-.summary-card {
-  margin: 1rem 0;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-}
-
-.summary-content {
-  text-align: center;
-  color: white;
-}
-
-.summary-amount {
-  font-size: 2rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.summary-label {
-  font-size: 1rem;
-  opacity: 0.9;
-  margin-bottom: 0.25rem;
-}
-
-.summary-count {
-  font-size: 0.875rem;
-  opacity: 0.8;
-}
 
 .entries-section {
   margin-top: 1rem;
@@ -335,16 +299,24 @@ watch(() => route.path, (newPath) => {
 .entry-amount {
   font-weight: 600;
   color: var(--ion-color-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  letter-spacing: -0.24px;
 }
 
 .entry-category {
   font-size: 0.875rem;
   color: var(--ion-color-medium);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  letter-spacing: -0.24px;
+  font-weight: 400;
 }
 
 .entry-time {
   font-size: 0.875rem;
   color: var(--ion-color-medium);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  letter-spacing: -0.24px;
+  font-weight: 400;
 }
 
 .empty-state {
@@ -365,11 +337,17 @@ watch(() => route.path, (newPath) => {
 .empty-state h3 {
   color: var(--ion-color-dark);
   margin: 0 0 0.5rem 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.24px;
 }
 
 .empty-state p {
   color: var(--ion-color-medium);
   margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  font-weight: 400;
+  letter-spacing: -0.24px;
 }
 
 ion-item-group {
@@ -380,6 +358,8 @@ ion-item-divider {
   --background: var(--ion-color-light);
   --color: var(--ion-color-dark);
   font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  letter-spacing: -0.24px;
 }
 
 .date-divider-content {
@@ -393,17 +373,72 @@ ion-item-divider {
 .date-text {
   font-weight: 600;
   color: var(--ion-color-dark);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  letter-spacing: -0.24px;
 }
 
 .date-total {
   font-weight: 700;
   color: var(--ion-color-primary);
   font-size: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+  letter-spacing: -0.24px;
 }
 
 .date-count {
   font-size: 0.75rem;
   color: var(--ion-color-medium);
   margin-top: 2px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  letter-spacing: -0.24px;
+  font-weight: 400;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  
+  .entries-section {
+    margin-top: 0.75rem;
+  }
+  
+  .entry-content {
+    padding: 14px 0;
+  }
+  
+  .entry-amount {
+    font-size: 0.95rem;
+  }
+  
+  .entry-category {
+    font-size: 0.8125rem;
+  }
+  
+  .entry-time {
+    font-size: 0.8125rem;
+  }
+  
+  .date-total {
+    font-size: 0.9rem;
+  }
+  
+  .date-count {
+    font-size: 0.6875rem;
+  }
+  
+  .empty-state {
+    padding: 2rem 1rem;
+  }
+  
+  .empty-icon {
+    font-size: 3rem;
+  }
+  
+  .empty-state h3 {
+    font-size: 1.125rem;
+  }
+  
+  .empty-state p {
+    font-size: 0.875rem;
+  }
 }
 </style>
