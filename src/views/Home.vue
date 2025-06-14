@@ -75,7 +75,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   IonPage,
@@ -94,39 +94,19 @@ import {
 } from '@ionic/vue'
 import { cardOutline } from 'ionicons/icons'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
-import { supabase } from '@/lib/supabase'
 import SpendingChart from '@/components/SpendingChart.vue'
 import CurrencyPicker from '@/components/CurrencyPicker.vue'
 import SpendingDialog from '@/components/SpendingDialog.vue'
-import { useAuth } from '@/composables/useAuth'
 import { useCurrency } from '@/composables/useCurrency'
+import { useSpendingStore } from '@/composables/useSpendingStore'
 
 const loading = ref(false)
-const entries = ref<Array<{ id?: string, date: string, amount: number, currency: string, category?: string, category_id?: string, created_at?: string }>>([])
-const { ensureValidSession } = useAuth()
 const { currencyCode, loadSavedCurrency, formatAmount } = useCurrency()
+const { entries, todayTotal, thisMonthTotal, loadEntries, addEntry } = useSpendingStore()
 const showSpendingDialog = ref(false)
 const route = useRoute()
 
 
-const todayTotal = computed(() => {
-  const today = new Date().toISOString().split('T')[0]
-  return entries.value
-    .filter(entry => entry.date === today)
-    .reduce((sum, entry) => sum + entry.amount, 0)
-    .toFixed(2)
-})
-
-
-const thisMonthTotal = computed(() => {
-  const now = new Date()
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-
-  return entries.value
-    .filter(entry => entry.date >= firstDay)
-    .reduce((sum, entry) => sum + entry.amount, 0)
-    .toFixed(2)
-})
 
 const handleSpendButtonClick = async () => {
   try {
@@ -146,33 +126,14 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
   }
 
   loading.value = true
-  const today = new Date().toISOString().split('T')[0]
-  const userId = await ensureValidSession()
   const { amount, category, categoryId } = spendingData
 
   try {
-    // Always insert new entry
-    const { error } = await supabase
-      .from('spending_entries')
-      .insert([
-        {
-          user_id: userId,
-          amount: amount,
-          currency: currencyCode.value,
-          category: category || null,
-          category_id: categoryId || null,
-          date: today
-        }
-      ])
-
-    if (error) throw error
-
-    entries.value.push({
-      date: today,
-      amount,
+    await addEntry({
+      amount: amount,
       currency: currencyCode.value,
-      category,
-      category_id: categoryId
+      category: category || undefined,
+      category_id: categoryId || undefined
     })
 
     showSpendingDialog.value = false
@@ -214,23 +175,6 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
 }
 
 
-const loadEntries = async () => {
-  const userId = await ensureValidSession()
-
-  try {
-    const { data, error } = await supabase
-      .from('spending_entries')
-      .select('id, date, amount, currency, category, category_id, created_at')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-
-    if (error) throw error
-
-    entries.value = data || []
-  } catch (error) {
-    console.error('Error loading entries:', error)
-  }
-}
 
 onMounted(() => {
   loadSavedCurrency()
