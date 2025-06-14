@@ -106,6 +106,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useCurrency } from '@/composables/useCurrency'
+import { useDateUtils } from '@/composables/useDateUtils'
 
 interface Props {
   entries: Array<{ date: string, amount: number, currency: string, category?: string }>
@@ -113,6 +114,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const { formatAmount } = useCurrency()
+const { toLocalDateString, getDaysAgo } = useDateUtils()
 
 const chartSvg = ref<SVGElement>()
 const chartContainer = ref<HTMLElement>()
@@ -130,14 +132,19 @@ const tooltip = ref({
 
 const chartData = computed(() => {
   const data = []
-  const today = new Date()
   
   for (let i = 29; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(today.getDate() - i)
-    const dateStr = date.toISOString().split('T')[0]
+    // Get the local date string for i days ago
+    const dateStr = getDaysAgo(i)
+    const date = new Date()
+    date.setDate(date.getDate() - i)
     
-    const dayEntries = props.entries.filter(entry => entry.date === dateStr)
+    const dayEntries = props.entries.filter(entry => {
+      // Convert UTC date from backend to local timezone and format as YYYY-MM-DD
+      const entryLocalDate = toLocalDateString(entry.date)
+      return entryLocalDate === dateStr
+    })
+    
     const hasSpending = dayEntries.length > 0
     const amount = dayEntries.reduce((sum, entry) => sum + entry.amount, 0)
     const currency = dayEntries[0]?.currency || '$'

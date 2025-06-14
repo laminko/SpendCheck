@@ -16,10 +16,9 @@
             'has-spending': day.hasSpending,
             'invisible': !day.isVisible
           }"
-          :style="{ opacity: day.hasSpending ? day.intensity : (day.isVisible ? 0.5 : 0.15) }"
+          :style="{ opacity: day.hasSpending ? day.intensity : (day.isVisible ? 0.6 : 0.25) }"
           :title="day.isVisible ? `${day.date}: ${day.hasSpending ? `${day.currency || '$'}${day.amount.toFixed(2)}` : 'No spending'}` : ''"
-        >
-        </div>
+        />
       </div>
       
       <!-- Line Chart -->
@@ -28,15 +27,15 @@
       <!-- Legend (only for grid view) -->
       <div v-if="chartType === 'grid'" class="chart-legend">
         <div class="legend-item">
-          <div class="legend-color no-spend"></div>
+          <div class="legend-color no-spend" />
           <span>No spending</span>
         </div>
         <div class="legend-item">
-          <div class="legend-color light-spend"></div>
+          <div class="legend-color light-spend" />
           <span>Low amount</span>
         </div>
         <div class="legend-item">
-          <div class="legend-color has-spend"></div>
+          <div class="legend-color has-spend" />
           <span>High amount</span>
         </div>
       </div>
@@ -48,6 +47,7 @@
 import { ref, computed } from 'vue'
 import ChartToggle from './ChartToggle.vue'
 import LineChart from './LineChart.vue'
+import { useDateUtils } from '@/composables/useDateUtils'
 
 interface Props {
   entries: Array<{ date: string, amount: number, currency: string, category?: string }>
@@ -55,6 +55,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const chartType = ref<'grid' | 'line'>('grid')
+const { toLocalDateString } = useDateUtils()
 
 const updateChartType = (type: 'grid' | 'line') => {
   chartType.value = type
@@ -83,15 +84,24 @@ const chartData = computed(() => {
   // Fill the grid with proper day arrangement (rows = days, columns = weeks)
   for (let week = 0; week < 14; week++) {
     for (let day = 0; day < 7; day++) { // 0 = Sunday, 6 = Saturday
-      const currentDate = new Date(startSunday)
-      currentDate.setDate(startSunday.getDate() + (week * 7) + day)
+      // Use getTime() for reliable date arithmetic across month boundaries
+      const totalDays = (week * 7) + day
+      const currentDate = new Date(startSunday.getTime() + (totalDays * 24 * 60 * 60 * 1000))
       
+      // Map JavaScript day (0=Sun, 1=Mon, ..., 6=Sat) to grid rows
+      // GitHub style typically shows: Sun, Mon, Tue, Wed, Thu, Fri, Sat
       const gridIndex = day * 14 + week // day * 14 + week (row * columns + column)
-      const dateStr = currentDate.toISOString().split('T')[0]
+      // Convert to local date string for comparison with backend UTC dates
+      const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`
       
       // Only include dates within our range
       if (currentDate <= today && currentDate >= startDate) {
-        const dayEntries = props.entries.filter(entry => entry.date === dateStr)
+        // Filter entries by converting UTC dates to local dates for comparison
+        const dayEntries = props.entries.filter(entry => {
+          // Convert UTC date from backend to local timezone and format as YYYY-MM-DD
+          const entryLocalDate = toLocalDateString(entry.date)
+          return entryLocalDate === dateStr
+        })
         const hasSpending = dayEntries.length > 0
         const amount = dayEntries.reduce((sum, entry) => sum + entry.amount, 0)
         const currency = dayEntries[0]?.currency || '$'
@@ -159,9 +169,10 @@ const chartData = computed(() => {
   display: grid;
   grid-template-columns: repeat(14, 1fr);
   grid-template-rows: repeat(7, 1fr);
-  gap: 0.3rem;
+  gap: 0.5rem;
   max-width: 100%;
   overflow: hidden;
+  padding: 0.5rem;
 }
 
 .chart-day {
@@ -170,6 +181,9 @@ const chartData = computed(() => {
   background: #f3f4f6;
   transition: all 0.2s ease;
   cursor: pointer;
+  padding: 2px;
+  min-height: 12px;
+  min-width: 12px;
 }
 
 .chart-day.has-spending {
@@ -211,7 +225,7 @@ const chartData = computed(() => {
 
 .legend-color.no-spend {
   background: #f3f4f6;
-  opacity: 0.2;
+  opacity: 0.6;
 }
 
 .legend-color.light-spend {
@@ -229,7 +243,8 @@ const chartData = computed(() => {
   .chart-grid {
     grid-template-columns: repeat(14, 1fr);
     grid-template-rows: repeat(7, 1fr);
-    gap: 0.15rem;
+    gap: 0.4rem;
+    padding: 0.4rem;
   }
   
   .chart-legend {
@@ -243,7 +258,8 @@ const chartData = computed(() => {
   .chart-grid {
     grid-template-columns: repeat(14, 1fr);
     grid-template-rows: repeat(7, 1fr);
-    gap: 0.1rem;
+    gap: 0.3rem;
+    padding: 0.3rem;
   }
   
   .chart-legend {
@@ -257,11 +273,14 @@ const chartData = computed(() => {
   .chart-grid {
     grid-template-columns: repeat(14, 1fr);
     grid-template-rows: repeat(7, 1fr);
-    gap: 0.05rem;
+    gap: 0.2rem;
+    padding: 0.2rem;
   }
   
   .chart-day {
     border-radius: 2px;
+    min-height: 10px;
+    min-width: 10px;
   }
   
   .chart-legend {

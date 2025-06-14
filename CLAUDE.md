@@ -23,6 +23,7 @@ When a human reports a bug or requests a feature, follow this workflow:
 5. **Ask for implementation approval** before proceeding
 6. **Work on the fix/feature** until the issue is resolved
 7. **After issue is resolved**, switch back to dev branch and fetch updates
+8. **Wait for human's approval** before closing the GitHub issue
 
 ## Important Instruction Reminders
 

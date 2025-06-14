@@ -29,6 +29,7 @@ import { computed } from 'vue'
 import { IonIcon } from '@ionic/vue'
 import { barChartOutline } from 'ionicons/icons'
 import { useCurrency } from '@/composables/useCurrency'
+import { useDateUtils } from '@/composables/useDateUtils'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -52,6 +53,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const { formatAmount } = useCurrency()
+const { toLocalDateString } = useDateUtils()
 
 const getCurrentMonthTitle = () => {
   const now = new Date()
@@ -72,7 +74,11 @@ const currentMonthChartData = computed(() => {
   for (let day = 1; day <= daysInMonth; day++) {
     labels.push(day.toString())
     const dateStr = new Date(now.getFullYear(), now.getMonth(), day).toISOString().split('T')[0]
-    const dayEntries = props.entries.filter(entry => entry.date === dateStr)
+    const dayEntries = props.entries.filter(entry => {
+      // Convert UTC date from backend to local timezone and format as YYYY-MM-DD
+      const entryLocalDate = toLocalDateString(entry.date)
+      return entryLocalDate === dateStr
+    })
     const amount = dayEntries.reduce((sum, entry) => sum + entry.amount, 0)
     data.push(amount)
   }
@@ -104,12 +110,16 @@ const peakDay = computed(() => {
   const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
   
   // Filter entries for current month
-  const currentMonthEntries = props.entries.filter(entry => entry.date >= firstDay && entry.date <= lastDay)
+  const currentMonthEntries = props.entries.filter(entry => {
+    const entryLocalDate = toLocalDateString(entry.date)
+    return entryLocalDate >= firstDay && entryLocalDate <= lastDay
+  })
   
   // Group by date and find peak
   const dailyTotals: Record<string, number> = {}
   currentMonthEntries.forEach(entry => {
-    dailyTotals[entry.date] = (dailyTotals[entry.date] || 0) + entry.amount
+    const entryLocalDate = toLocalDateString(entry.date)
+    dailyTotals[entryLocalDate] = (dailyTotals[entryLocalDate] || 0) + entry.amount
   })
   
   let maxAmount = 0
