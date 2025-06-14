@@ -16,7 +16,7 @@
             'has-spending': day.hasSpending,
             'invisible': !day.isVisible
           }"
-          :style="{ opacity: day.hasSpending ? day.intensity : (day.isVisible ? 0.3 : 0.15) }"
+          :style="{ opacity: day.hasSpending ? day.intensity : (day.isVisible ? 0.6 : 0.25) }"
           :title="day.isVisible ? `${day.date}: ${day.hasSpending ? `${day.currency || '$'}${day.amount.toFixed(2)}` : 'No spending'}` : ''"
         >
         </div>
@@ -174,9 +174,10 @@ const chartData = computed(() => {
   display: grid;
   grid-template-columns: repeat(14, 1fr);
   grid-template-rows: repeat(7, 1fr);
-  gap: 0.3rem;
+  gap: 0.5rem;
   max-width: 100%;
   overflow: hidden;
+  padding: 0.5rem;
 }
 
 .chart-day {
@@ -185,6 +186,9 @@ const chartData = computed(() => {
   background: #f3f4f6;
   transition: all 0.2s ease;
   cursor: pointer;
+  padding: 2px;
+  min-height: 12px;
+  min-width: 12px;
 }
 
 .chart-day.has-spending {
@@ -226,7 +230,7 @@ const chartData = computed(() => {
 
 .legend-color.no-spend {
   background: #f3f4f6;
-  opacity: 0.2;
+  opacity: 0.6;
 }
 
 .legend-color.light-spend {
@@ -244,7 +248,8 @@ const chartData = computed(() => {
   .chart-grid {
     grid-template-columns: repeat(14, 1fr);
     grid-template-rows: repeat(7, 1fr);
-    gap: 0.15rem;
+    gap: 0.4rem;
+    padding: 0.4rem;
   }
   
   .chart-legend {
@@ -258,7 +263,8 @@ const chartData = computed(() => {
   .chart-grid {
     grid-template-columns: repeat(14, 1fr);
     grid-template-rows: repeat(7, 1fr);
-    gap: 0.1rem;
+    gap: 0.3rem;
+    padding: 0.3rem;
   }
   
   .chart-legend {
@@ -272,11 +278,14 @@ const chartData = computed(() => {
   .chart-grid {
     grid-template-columns: repeat(14, 1fr);
     grid-template-rows: repeat(7, 1fr);
-    gap: 0.05rem;
+    gap: 0.2rem;
+    padding: 0.2rem;
   }
   
   .chart-day {
     border-radius: 2px;
+    min-height: 10px;
+    min-width: 10px;
   }
   
   .chart-legend {
