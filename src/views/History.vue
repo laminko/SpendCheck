@@ -66,7 +66,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed, watch } from 'vue'
+import { onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import {
   IonPage,
@@ -87,33 +87,37 @@ import {
 } from '@ionic/vue'
 import SummaryCard from '@/components/SummaryCard.vue'
 import { receiptOutline, trashOutline } from 'ionicons/icons'
-import { supabase } from '@/lib/supabase'
-import { useAuth } from '@/composables/useAuth'
 import { useCurrency } from '@/composables/useCurrency'
+import { useSpendingStore } from '@/composables/useSpendingStore'
+import { useDateUtils } from '@/composables/useDateUtils'
 
-const entries = ref<Array<{ id: string, date: string, amount: number, currency: string, category?: string, category_id?: string, created_at?: string }>>([])
-const { ensureValidSession } = useAuth()
 const { formatAmount } = useCurrency()
 const route = useRoute()
+const { entries, loadEntries, deleteEntry } = useSpendingStore()
+const { getDaysAgo, toLocalDateString, formatRelativeDate, formatTimeAgo } = useDateUtils()
 
 // Filter entries to show only last 7 days
 const filteredEntries = computed(() => {
-  const now = new Date()
-  const sevenDaysAgo = new Date(now.getTime() - (7 * 24 * 60 * 60 * 1000))
-  const sevenDaysAgoString = sevenDaysAgo.toISOString().split('T')[0]
+  const sevenDaysAgoString = getDaysAgo(7)
   
-  return entries.value.filter(entry => entry.date >= sevenDaysAgoString)
+  return entries.value.filter(entry => {
+    const entryDate = toLocalDateString(entry.date)
+    return entryDate >= sevenDaysAgoString
+  })
 })
 
 // Group entries by date in descending order
 const groupedEntries = computed(() => {
-  const groups: Record<string, Array<{ id: string, date: string, amount: number, currency: string, category?: string, category_id?: string, created_at?: string }>> = {}
+  const groups: Record<string, Array<{ id?: string, date: string, amount: number, currency: string, category?: string, category_id?: string, created_at?: string }>> = {}
   
   filteredEntries.value.forEach(entry => {
-    if (!groups[entry.date]) {
-      groups[entry.date] = []
+    if (entry.id) {
+      const entryLocalDate = toLocalDateString(entry.date)
+      if (!groups[entryLocalDate]) {
+        groups[entryLocalDate] = []
+      }
+      groups[entryLocalDate].push(entry)
     }
-    groups[entry.date].push(entry)
   })
   
   // Sort dates in descending order and sort entries within each date
@@ -136,65 +140,15 @@ const totalAmount = computed(() => {
 
 
 const formatDateDivider = (dateString: string) => {
-  const date = new Date(dateString)
-  const today = new Date()
-  const yesterday = new Date(today)
-  yesterday.setDate(yesterday.getDate() - 1)
-
-  if (date.toDateString() === today.toDateString()) {
-    return 'Today'
-  } else if (date.toDateString() === yesterday.toDateString()) {
-    return 'Yesterday'
-  } else {
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric'
-    })
-  }
+  return formatRelativeDate(dateString)
 }
 
 const formatEntryTime = (timestamp: string) => {
-  const date = new Date(timestamp)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / (1000 * 60))
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-
-  if (diffMins < 1) {
-    return 'Just now'
-  } else if (diffMins < 60) {
-    return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`
-  } else if (diffHours < 24 && date.toDateString() === now.toDateString()) {
-    return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
-  } else {
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    })
-  }
+  return formatTimeAgo(timestamp)
 }
 
-const loadEntries = async () => {
-  const userId = await ensureValidSession()
 
-  try {
-    const { data, error } = await supabase
-      .from('spending_entries')
-      .select('id, date, amount, currency, category, category_id, created_at')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false })
-
-    if (error) throw error
-
-    entries.value = data || []
-  } catch (error) {
-    console.error('Error loading entries:', error)
-  }
-}
-
-const confirmDelete = async (entry: { id: string, amount: number, category?: string }) => {
+const confirmDelete = async (entry: { id?: string, amount: number, category?: string }) => {
   const alert = await alertController.create({
     header: 'Delete Entry',
     message: `Are you sure you want to delete this ${formatAmount(entry.amount)} ${entry.category ? `(${entry.category})` : ''} entry?`,
@@ -206,7 +160,11 @@ const confirmDelete = async (entry: { id: string, amount: number, category?: str
       {
         text: 'Delete',
         role: 'destructive',
-        handler: () => deleteEntry(entry.id)
+        handler: () => {
+          if (entry.id) {
+            return handleDeleteEntry(entry.id)
+          }
+        }
       }
     ]
   })
@@ -214,21 +172,11 @@ const confirmDelete = async (entry: { id: string, amount: number, category?: str
   await alert.present()
 }
 
-const deleteEntry = async (entryId: string) => {
-  const userId = await ensureValidSession()
-
+const handleDeleteEntry = async (entryId: string) => {
+  const deletedEntry = entries.value.find(entry => entry.id === entryId)
+  
   try {
-    const { error } = await supabase
-      .from('spending_entries')
-      .delete()
-      .eq('id', entryId)
-      .eq('user_id', userId)
-
-    if (error) throw error
-
-    // Remove entry from local state
-    const deletedEntry = entries.value.find(entry => entry.id === entryId)
-    entries.value = entries.value.filter(entry => entry.id !== entryId)
+    await deleteEntry(entryId)
 
     // Show success toast
     const toast = await toastController.create({
