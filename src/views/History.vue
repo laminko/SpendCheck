@@ -88,8 +88,7 @@ import {
 import SummaryCard from '@/components/SummaryCard.vue'
 import { receiptOutline, trashOutline } from 'ionicons/icons'
 import { useCurrency } from '@/composables/useCurrency'
-import { useSpendingStore } from '@/composables/useSpendingStore'
-import { useDateUtils } from '@/composables/useDateUtils'
+import moment from 'moment-timezone'
 
 const { formatAmount } = useCurrency()
 const route = useRoute()
@@ -144,7 +143,10 @@ const formatDateDivider = (dateString: string) => {
 }
 
 const formatEntryTime = (timestamp: string) => {
-  return formatTimeAgo(timestamp)
+
+  // Use yyyy-mm-dd format with AM/PM (e.g., "2024-12-14 2:30 PM")
+  return moment(timestamp).format('YYYY-MM-DD h:mm A')
+
 }
 
 
