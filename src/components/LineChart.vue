@@ -233,7 +233,7 @@ const yAxisLabels = computed(() => {
     labels.push({
       value,
       y,
-      text: value === 0 ? '0' : formatAmount(value, undefined, true)
+      text: value === 0 ? '0' : formatAmount(value)
     })
   }
   

@@ -58,7 +58,9 @@ const router = createRouter({
 })
 
 const app = createApp(App)
-  .use(IonicVue)
+  .use(IonicVue, {
+    mode: 'ios'
+  })
   .use(router)
 
 router.isReady().then(() => {

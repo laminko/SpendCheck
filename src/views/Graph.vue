@@ -40,7 +40,7 @@
         <ion-card-content>
           <div class="summary-content">
             <div class="summary-amount">
-              {{ formatAmount(totalAmount, undefined, true) }}
+              {{ formatAmount(totalAmount) }}
             </div>
             <div class="summary-label">
               Total {{ getSummaryLabel() }}
@@ -63,11 +63,11 @@
                 <div 
                   class="bar" 
                   :style="{ height: `${item.percentage}%` }"
-                  :title="`${item.label}: ${formatAmount(item.amount, undefined, true)}`"
+                  :title="`${item.label}: ${formatAmount(item.amount)}`"
                 ></div>
               </div>
               <div class="bar-label">{{ item.label }}</div>
-              <div class="bar-amount">{{ formatAmount(item.amount, undefined, true) }}</div>
+              <div class="bar-amount">{{ formatAmount(item.amount) }}</div>
             </div>
           </div>
           <div v-else class="empty-chart">
@@ -91,7 +91,7 @@
                 ></div>
                 <div class="category-details">
                   <div class="category-name">{{ category.name }}</div>
-                  <div class="category-amount">{{ formatAmount(category.amount, undefined, true) }}</div>
+                  <div class="category-amount">{{ formatAmount(category.amount) }}</div>
                 </div>
               </div>
               <div class="category-percentage">{{ category.percentage.toFixed(1) }}%</div>

@@ -44,7 +44,7 @@
               <ion-col size="6">
                 <ion-card class="stat-card">
                   <ion-card-content class="ion-text-center">
-                    <div class="stat-number">{{ formatAmount(parseFloat(todayTotal), undefined, true) }}</div>
+                    <div class="stat-number">{{ formatAmount(parseFloat(todayTotal)) }}</div>
                     <div class="stat-label">Total Today</div>
                   </ion-card-content>
                 </ion-card>
@@ -52,7 +52,7 @@
               <ion-col size="6">
                 <ion-card class="stat-card">
                   <ion-card-content class="ion-text-center">
-                    <div class="stat-number">{{ formatAmount(parseFloat(thisMonthTotal), undefined, true) }}</div>
+                    <div class="stat-number">{{ formatAmount(parseFloat(thisMonthTotal)) }}</div>
                     <div class="stat-label">Total This Month</div>
                   </ion-card-content>
                 </ion-card>
@@ -89,7 +89,8 @@ import {
   IonIcon,
   IonGrid,
   IonRow,
-  IonCol
+  IonCol,
+  toastController
 } from '@ionic/vue'
 import { cardOutline } from 'ionicons/icons'
 import { Haptics, ImpactStyle } from '@capacitor/haptics'
@@ -175,8 +176,38 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
     })
 
     showSpendingDialog.value = false
+
+    // Show success toast
+    const toast = await toastController.create({
+      message: `${formatAmount(amount)} ${category ? `for ${category}` : ''} tracked successfully!`,
+      duration: 2000,
+      position: 'bottom',
+      color: 'success',
+      buttons: [
+        {
+          text: 'Dismiss',
+          role: 'cancel'
+        }
+      ]
+    })
+    await toast.present()
   } catch (error) {
     console.error('Error logging spending:', error)
+    
+    // Show error toast
+    const toast = await toastController.create({
+      message: 'Failed to track spending. Please try again.',
+      duration: 3000,
+      position: 'bottom',
+      color: 'danger',
+      buttons: [
+        {
+          text: 'Dismiss',
+          role: 'cancel'
+        }
+      ]
+    })
+    await toast.present()
   } finally {
     loading.value = false
   }
