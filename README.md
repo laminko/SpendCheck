@@ -27,12 +27,6 @@
 
 Visit the live app: **[SpendCheck App](https://spend-check-eta.vercel.app)**
 
-## 🚧 v1.0 Roadmap
-- **📋 Statistics Cards Redesign** - 3 horizontal cards layout  
-- **📱 Bottom Navigation** - Home/History/Graph tabs
-- **📊 Multiple Daily Entries** - Support multiple expenses per day
-- **📤 Data Export** - CSV/PDF export functionality
-
 ## 🏃‍♂️ Quick Start
 
 ### Prerequisites
@@ -81,22 +75,6 @@ Visit the live app: **[SpendCheck App](https://spend-check-eta.vercel.app)**
 
 **21 supported currencies** including USD, EUR, GBP, JPY, THB, and more.  
 [View full list →](./src/composables/useCurrency.ts)
-
-## 🏗️ Architecture
-
-```
-src/
-├── components/           # UI components
-│   ├── SpendingDialog.vue   # Modal with categories
-│   ├── SpendingChart.vue    # GitHub-style grid
-│   ├── LineChart.vue        # SVG line chart
-│   └── CurrencyPicker.vue   # Currency selector
-├── composables/          # Vue composition
-│   ├── useAuth.ts           # Anonymous auth
-│   └── useCurrency.ts       # Currency handling
-├── lib/supabase.ts       # Database + types
-└── views/Home.vue        # Main interface
-```
 
 ## 🚀 Deployment
 

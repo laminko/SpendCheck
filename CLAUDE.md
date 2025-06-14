@@ -25,6 +25,53 @@ When a human reports a bug or requests a feature, follow this workflow:
 7. **After issue is resolved**, switch back to dev branch and fetch updates
 8. **Wait for human's approval** before closing the GitHub issue
 
+## Current Project Status
+
+**Project Overview:**
+- Simple spending tracker web app built with Vue 3 + TypeScript + Ionic Vue
+- Backend: Supabase (PostgreSQL with real-time capabilities)
+- Live at: https://spend-check-eta.vercel.app
+- Mobile-ready with Capacitor for iOS/Android
+
+**Current Branch Status:**
+- Working on `dev` branch (main development branch)
+- Latest commit: `bb74916` - Fixed missing imports in History.vue
+- Clean working directory, all changes committed and pushed
+
+**Recent Key Issues Resolved:**
+1. **History.vue Import Issues** - Fixed missing `useSpendingStore` and `useDateUtils` imports
+2. **Toast Implementation** - Verified proper Ionic color usage (`success`, `danger`)
+3. **TypeScript Warnings** - Removed unused `formatTimeAgo` variable
+4. **DateTime Format** - Recently improved History page timestamp display
+5. **Daily Spending Popover** - Recently added to GitHub-style grid
+
+**Technical Architecture:**
+- **Frontend:** Vue 3 Composition API + TypeScript + Ionic Vue
+- **State Management:** Composables (useSpendingStore, useCurrency, useDateUtils, etc.)
+- **Charts:** Chart.js + vue-chartjs for data visualization
+- **Database:** Supabase with RLS authentication
+- **Build:** Vite + vue-tsc for TypeScript checking
+- **Deployment:** Vercel with auto-deploy from main branch
+
+**Key Components:**
+- `Home.vue` - Main spending tracking interface
+- `History.vue` - Last 7 days spending history with precise timestamps
+- `Graph.vue` - Charts and analytics
+- `SpendingDialog.vue` - Category selection modal
+- `SpendingChart.vue` - GitHub-style spending grid
+
+**Key Composables:**
+- `useSpendingStore.ts` - Spending data management
+- `useCurrency.ts` - 21 supported currencies
+- `useDateUtils.ts` - Date formatting and utilities
+- `useAuth.ts` - Anonymous authentication
+
+**Current Build Commands:**
+- `npm run dev` - Development server
+- `npm run build` - Production build with TypeScript check
+- `npm run typecheck` - TypeScript validation only
+- Mobile: `npm run build:mobile` + Capacitor commands
+
 ## Important Instruction Reminders
 
 Do what has been asked; nothing more, nothing less.
