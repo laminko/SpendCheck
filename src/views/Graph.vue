@@ -21,18 +21,7 @@
           </ion-segment-button>
         </ion-segment>
 
-        <!-- Time Period (only for bar charts) -->
-        <ion-segment v-if="chartType === 'bar'" v-model="timePeriod" @ionChange="onTimePeriodChange">
-          <ion-segment-button value="daily">
-            <ion-label>Daily</ion-label>
-          </ion-segment-button>
-          <ion-segment-button value="monthly">
-            <ion-label>Monthly</ion-label>
-          </ion-segment-button>
-          <ion-segment-button value="yearly">
-            <ion-label>Yearly</ion-label>
-          </ion-segment-button>
-        </ion-segment>
+        <!-- Note: Time period removed for bar chart as it now shows current month only -->
       </div>
 
       <!-- Summary card -->
@@ -53,26 +42,15 @@
       <div class="chart-section">
         <!-- Bar Chart -->
         <div v-if="chartType === 'bar'" class="bar-chart-container">
-          <div v-if="barChartData.length > 0" class="bar-chart">
-            <div 
-              v-for="(item, index) in barChartData" 
-              :key="index"
-              class="bar-item"
-            >
-              <div class="bar-container">
-                <div 
-                  class="bar" 
-                  :style="{ height: `${item.percentage}%` }"
-                  :title="`${item.label}: ${formatAmount(item.amount)}`"
-                ></div>
-              </div>
-              <div class="bar-label">{{ item.label }}</div>
-              <div class="bar-amount">{{ formatAmount(item.amount) }}</div>
-            </div>
+          <div class="chart-title">
+            {{ getCurrentMonthTitle() }}
+          </div>
+          <div v-if="currentMonthChartData.datasets.length > 0 && currentMonthChartData.datasets.some(dataset => dataset.data.some(val => val > 0))" class="chartjs-container">
+            <Bar :data="currentMonthChartData" :options="chartOptions" />
           </div>
           <div v-else class="empty-chart">
             <ion-icon :icon="barChartOutline" class="empty-icon"></ion-icon>
-            <p>No data available for this period</p>
+            <p>No spending data for {{ getCurrentMonthTitle() }}</p>
           </div>
         </div>
 
@@ -126,6 +104,26 @@ import { barChartOutline, pieChartOutline } from 'ionicons/icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/composables/useAuth'
 import { useCurrency } from '@/composables/useCurrency'
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartOptions
+} from 'chart.js'
+import { Bar } from 'vue-chartjs'
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+)
 
 const chartType = ref('bar')
 const timePeriod = ref('daily')
@@ -144,12 +142,10 @@ const onChartTypeChange = (event: CustomEvent) => {
   chartType.value = event.detail.value
 }
 
-const onTimePeriodChange = (event: CustomEvent) => {
-  timePeriod.value = event.detail.value
-}
 
 const getSummaryLabel = () => {
   if (chartType.value === 'pie') return 'All Time'
+  if (chartType.value === 'bar') return getCurrentMonthTitle()
   
   switch (timePeriod.value) {
     case 'daily': return 'Last 7 Days'
@@ -159,10 +155,26 @@ const getSummaryLabel = () => {
   }
 }
 
+const getCurrentMonthTitle = () => {
+  const now = new Date()
+  return now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+}
+
 // Calculate total amount based on current filters
 const totalAmount = computed(() => {
   if (chartType.value === 'pie') {
     return entries.value.reduce((sum, entry) => sum + entry.amount, 0)
+  }
+  
+  if (chartType.value === 'bar') {
+    // For bar chart, show current month total
+    const now = new Date()
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+    
+    return entries.value
+      .filter(entry => entry.date >= firstDay && entry.date <= lastDay)
+      .reduce((sum, entry) => sum + entry.amount, 0)
   }
   
   const now = new Date()
@@ -188,75 +200,113 @@ const totalAmount = computed(() => {
   return filteredEntries.reduce((sum, entry) => sum + entry.amount, 0)
 })
 
-// Bar chart data preparation
-const barChartData = computed(() => {
+
+// Current month chart data for Chart.js
+const currentMonthChartData = computed(() => {
   const now = new Date()
-  let data: Array<{ label: string, amount: number, percentage: number }> = []
-
-  switch (timePeriod.value) {
-    case 'daily':
-      // Last 7 days
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date(now)
-        date.setDate(now.getDate() - i)
-        const dateStr = date.toISOString().split('T')[0]
-        
-        const dayEntries = entries.value.filter(entry => entry.date === dateStr)
-        const amount = dayEntries.reduce((sum, entry) => sum + entry.amount, 0)
-        
-        data.push({
-          label: i === 0 ? 'Today' : date.toLocaleDateString('en-US', { weekday: 'short' }),
-          amount,
-          percentage: 0
-        })
-      }
-      break
-
-    case 'monthly':
-      // Last 12 months
-      for (let i = 11; i >= 0; i--) {
-        const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
-        const nextMonth = new Date(now.getFullYear(), now.getMonth() - i + 1, 1)
-        
-        const monthEntries = entries.value.filter(entry => {
-          const entryDate = new Date(entry.date)
-          return entryDate >= date && entryDate < nextMonth
-        })
-        const amount = monthEntries.reduce((sum, entry) => sum + entry.amount, 0)
-        
-        data.push({
-          label: date.toLocaleDateString('en-US', { month: 'short' }),
-          amount,
-          percentage: 0
-        })
-      }
-      break
-
-    case 'yearly':
-      // Group by year
-      const yearGroups: Record<number, number> = {}
-      entries.value.forEach(entry => {
-        const year = new Date(entry.date).getFullYear()
-        yearGroups[year] = (yearGroups[year] || 0) + entry.amount
-      })
-      
-      data = Object.entries(yearGroups)
-        .sort(([a], [b]) => parseInt(a) - parseInt(b))
-        .map(([year, amount]) => ({
-          label: year,
-          amount,
-          percentage: 0
-        }))
-      break
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+  const daysInMonth = lastDay.getDate()
+  
+  // Create labels for all days in the month
+  const labels = []
+  for (let day = 1; day <= daysInMonth; day++) {
+    labels.push(day.toString())
   }
-
-  // Calculate percentages
-  const maxAmount = Math.max(...data.map(d => d.amount), 1)
-  data.forEach(item => {
-    item.percentage = maxAmount > 0 ? (item.amount / maxAmount) * 100 : 0
+  
+  // Get categories and assign colors
+  const categories = [...new Set(entries.value.map(entry => entry.category || 'Uncategorized'))]
+  const categoryColorMap = categories.reduce((map, category, index) => {
+    map[category] = chartColors[index % chartColors.length]
+    return map
+  }, {} as Record<string, string>)
+  
+  // Create datasets for each category
+  const datasets = categories.map(category => {
+    const data = []
+    
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dateStr = new Date(now.getFullYear(), now.getMonth(), day).toISOString().split('T')[0]
+      const dayEntries = entries.value.filter(entry => 
+        entry.date === dateStr && (entry.category || 'Uncategorized') === category
+      )
+      const amount = dayEntries.reduce((sum, entry) => sum + entry.amount, 0)
+      data.push(amount)
+    }
+    
+    return {
+      label: category,
+      data,
+      backgroundColor: categoryColorMap[category],
+      borderColor: categoryColorMap[category],
+      borderWidth: 1,
+      borderRadius: 4,
+      borderSkipped: false
+    }
   })
+  
+  return {
+    labels,
+    datasets
+  }
+})
 
-  return data
+// Chart.js options
+const chartOptions = computed((): ChartOptions<'bar'> => {
+  const { formatAmount } = useCurrency()
+  
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+          font: {
+            size: 12
+          }
+        }
+      },
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const value = context.parsed.y
+            const category = context.dataset.label
+            return `${category}: ${formatAmount(value)}`
+          }
+        }
+      }
+    },
+    scales: {
+      x: {
+        title: {
+          display: true,
+          text: 'Day of Month'
+        },
+        grid: {
+          display: false
+        }
+      },
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: 'Amount'
+        },
+        ticks: {
+          callback: (value) => {
+            return formatAmount(Number(value))
+          }
+        }
+      }
+    },
+    interaction: {
+      mode: 'index',
+      intersect: false
+    }
+  }
 })
 
 // Category data for pie chart
@@ -338,57 +388,20 @@ onMounted(() => {
   margin-top: 1rem;
 }
 
-/* Bar Chart Styles */
-.bar-chart {
-  display: flex;
-  align-items: end;
-  gap: 0.5rem;
-  height: 200px;
-  padding: 1rem;
+.chart-title {
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ion-color-dark);
+  margin-bottom: 1rem;
+}
+
+.chartjs-container {
   background: white;
   border-radius: 12px;
+  padding: 1.5rem;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-}
-
-.bar-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.bar-container {
-  height: 150px;
-  width: 100%;
-  display: flex;
-  align-items: end;
-  justify-content: center;
-}
-
-.bar {
-  width: 80%;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  border-radius: 4px 4px 0 0;
-  min-height: 2px;
-  transition: all 0.3s ease;
-}
-
-.bar:hover {
-  opacity: 0.8;
-  transform: scaleY(1.05);
-}
-
-.bar-label {
-  font-size: 0.75rem;
-  color: var(--ion-color-medium);
-  font-weight: 500;
-}
-
-.bar-amount {
-  font-size: 0.7rem;
-  color: var(--ion-color-dark);
-  font-weight: 600;
+  height: 400px;
 }
 
 /* Category (Pie Chart) Styles */
@@ -470,17 +483,13 @@ onMounted(() => {
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-  .bar-chart {
-    height: 180px;
-    padding: 0.75rem;
+  .chartjs-container {
+    height: 300px;
+    padding: 1rem;
   }
   
-  .bar-container {
-    height: 120px;
-  }
-  
-  .bar-label, .bar-amount {
-    font-size: 0.7rem;
+  .chart-title {
+    font-size: 1.1rem;
   }
   
   .category-item {
