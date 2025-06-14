@@ -114,7 +114,7 @@ interface Props {
 
 const props = defineProps<Props>()
 const { formatAmount } = useCurrency()
-const { toLocalDateString } = useDateUtils()
+const { toLocalDateString, getDaysAgo } = useDateUtils()
 
 const chartSvg = ref<SVGElement>()
 const chartContainer = ref<HTMLElement>()
@@ -132,12 +132,12 @@ const tooltip = ref({
 
 const chartData = computed(() => {
   const data = []
-  const today = new Date()
   
   for (let i = 29; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(today.getDate() - i)
-    const dateStr = date.toISOString().split('T')[0]
+    // Get the local date string for i days ago
+    const dateStr = getDaysAgo(i)
+    const date = new Date()
+    date.setDate(date.getDate() - i)
     
     const dayEntries = props.entries.filter(entry => {
       // Convert UTC date from backend to local timezone and format as YYYY-MM-DD
