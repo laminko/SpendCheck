@@ -90,6 +90,7 @@ import { receiptOutline, trashOutline } from 'ionicons/icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/composables/useAuth'
 import { useCurrency } from '@/composables/useCurrency'
+import moment from 'moment-timezone'
 
 const entries = ref<Array<{ id: string, date: string, amount: number, currency: string, category?: string, category_id?: string, created_at?: string }>>([])
 const { ensureValidSession } = useAuth()
@@ -155,25 +156,8 @@ const formatDateDivider = (dateString: string) => {
 }
 
 const formatEntryTime = (timestamp: string) => {
-  const date = new Date(timestamp)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / (1000 * 60))
-  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
-
-  if (diffMins < 1) {
-    return 'Just now'
-  } else if (diffMins < 60) {
-    return `${diffMins} min${diffMins !== 1 ? 's' : ''} ago`
-  } else if (diffHours < 24 && date.toDateString() === now.toDateString()) {
-    return `${diffHours} hour${diffHours !== 1 ? 's' : ''} ago`
-  } else {
-    return date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    })
-  }
+  // Use yyyy-mm-dd format with AM/PM (e.g., "2024-12-14 2:30 PM")
+  return moment(timestamp).format('YYYY-MM-DD h:mm A')
 }
 
 const loadEntries = async () => {
