@@ -14,9 +14,9 @@
           class="chart-day"
           :class="{ 
             'has-spending': day.hasSpending,
-            'invisible': !day.isVisible
+            'invisible': !day.isVisible,
+            [`intensity-${day.colorIntensity}`]: day.hasSpending
           }"
-          :style="{ opacity: day.hasSpending ? day.intensity : (day.isVisible ? 0.6 : 0.25) }"
           :title="day.isVisible ? `${day.date}: ${day.hasSpending ? `${day.currency || '$'}${day.amount.toFixed(2)}` : 'No spending'}` : ''"
         />
       </div>
@@ -62,8 +62,16 @@ const updateChartType = (type: 'grid' | 'line') => {
 }
 
 const chartData = computed(() => {
-  const amounts = props.entries.map(e => e.amount)
-  const maxAmount = Math.max(...amounts, 1)
+  // First, group entries by date to get daily totals
+  const dailyTotals = new Map()
+  props.entries.forEach(entry => {
+    const entryLocalDate = toLocalDateString(entry.date)
+    const current = dailyTotals.get(entryLocalDate) || 0
+    dailyTotals.set(entryLocalDate, current + entry.amount)
+  })
+  
+  const dailyAmounts = Array.from(dailyTotals.values())
+  const maxAmount = dailyAmounts.length > 0 ? Math.max(...dailyAmounts) : 1
   
   // Create a 7×14 grid (98 cells) arranged by days (rows) and weeks (columns)
   const grid = Array(98).fill(null)
@@ -105,7 +113,8 @@ const chartData = computed(() => {
         const hasSpending = dayEntries.length > 0
         const amount = dayEntries.reduce((sum, entry) => sum + entry.amount, 0)
         const currency = dayEntries[0]?.currency || '$'
-        const intensity = hasSpending ? Math.max(0.75, amount / maxAmount) : 0
+        const intensity = hasSpending ? Math.round((amount / maxAmount) * 100) : 0 // 0-100 scale
+        const colorIntensity = hasSpending ? Math.min(10, Math.max(1, Math.ceil(intensity / 10))) : 0 // 1-10 levels
         
         grid[gridIndex] = {
           date: dateStr,
@@ -113,6 +122,7 @@ const chartData = computed(() => {
           amount,
           currency,
           intensity,
+          colorIntensity,
           isVisible: true
         }
       } else {
@@ -123,6 +133,7 @@ const chartData = computed(() => {
           amount: 0,
           currency: '$',
           intensity: 0,
+          colorIntensity: 0,
           isVisible: false
         }
       }
@@ -186,13 +197,55 @@ const chartData = computed(() => {
   min-width: 12px;
 }
 
-.chart-day.has-spending {
+.chart-day.intensity-1 {
+  background: #eaf2ff;
+}
+
+.chart-day.intensity-2 {
+  background: #d3e4ff;
+}
+
+.chart-day.intensity-3 {
+  background: #bcd6ff;
+}
+
+.chart-day.intensity-4 {
+  background: #a4c7ff;
+}
+
+.chart-day.intensity-5 {
+  background: #8eb9ff;
+}
+
+.chart-day.intensity-6 {
   background: #3b82f6;
+}
+
+.chart-day.intensity-7 {
+  background: #306ae0;
+}
+
+.chart-day.intensity-8 {
+  background: #295bcc;
+}
+
+.chart-day.intensity-9 {
+  background: #224c99;
+}
+
+.chart-day.intensity-10 {
+  background: #1c3d66;
+}
+
+.chart-day:not(.has-spending) {
+  background: #f3f4f6;
+  opacity: 0.6;
 }
 
 .chart-day.invisible {
   pointer-events: none;
   cursor: default;
+  opacity: 0.25;
 }
 
 .chart-day:hover {
@@ -225,17 +278,14 @@ const chartData = computed(() => {
 
 .legend-color.no-spend {
   background: #f3f4f6;
-  opacity: 0.6;
 }
 
 .legend-color.light-spend {
-  background: #3b82f6;
-  opacity: 0.4;
+  background: #eaf2ff;
 }
 
 .legend-color.has-spend {
-  background: #3b82f6;
-  opacity: 1;
+  background: #1c3d66;
 }
 
 /* Tablet breakpoint */
