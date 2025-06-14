@@ -88,12 +88,14 @@ import {
 import SummaryCard from '@/components/SummaryCard.vue'
 import { receiptOutline, trashOutline } from 'ionicons/icons'
 import { useCurrency } from '@/composables/useCurrency'
+import { useSpendingStore } from '@/composables/useSpendingStore'
+import { useDateUtils } from '@/composables/useDateUtils'
 import moment from 'moment-timezone'
 
 const { formatAmount } = useCurrency()
 const route = useRoute()
 const { entries, loadEntries, deleteEntry } = useSpendingStore()
-const { getDaysAgo, toLocalDateString, formatRelativeDate, formatTimeAgo } = useDateUtils()
+const { getDaysAgo, toLocalDateString, formatRelativeDate } = useDateUtils()
 
 // Filter entries to show only last 7 days
 const filteredEntries = computed(() => {
