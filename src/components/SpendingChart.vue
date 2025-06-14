@@ -18,8 +18,7 @@
           }"
           :style="{ opacity: day.hasSpending ? day.intensity : (day.isVisible ? 0.6 : 0.25) }"
           :title="day.isVisible ? `${day.date}: ${day.hasSpending ? `${day.currency || '$'}${day.amount.toFixed(2)}` : 'No spending'}` : ''"
-        >
-        </div>
+        />
       </div>
       
       <!-- Line Chart -->
@@ -28,20 +27,19 @@
       <!-- Legend (only for grid view) -->
       <div v-if="chartType === 'grid'" class="chart-legend">
         <div class="legend-item">
-          <div class="legend-color no-spend"></div>
+          <div class="legend-color no-spend" />
           <span>No spending</span>
         </div>
         <div class="legend-item">
-          <div class="legend-color light-spend"></div>
+          <div class="legend-color light-spend" />
           <span>Low amount</span>
         </div>
         <div class="legend-item">
-          <div class="legend-color has-spend"></div>
+          <div class="legend-color has-spend" />
           <span>High amount</span>
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -55,7 +53,6 @@ interface Props {
   entries: Array<{ date: string, amount: number, currency: string, category?: string }>
 }
 
-
 const props = defineProps<Props>()
 const chartType = ref<'grid' | 'line'>('grid')
 const { toLocalDateString } = useDateUtils()
@@ -63,7 +60,6 @@ const { toLocalDateString } = useDateUtils()
 const updateChartType = (type: 'grid' | 'line') => {
   chartType.value = type
 }
-
 
 const chartData = computed(() => {
   const amounts = props.entries.map(e => e.amount)
@@ -97,7 +93,6 @@ const chartData = computed(() => {
       const gridIndex = day * 14 + week // day * 14 + week (row * columns + column)
       // Convert to local date string for comparison with backend UTC dates
       const dateStr = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}-${String(currentDate.getDate()).padStart(2, '0')}`
-      
       
       // Only include dates within our range
       if (currentDate <= today && currentDate >= startDate) {
@@ -293,5 +288,4 @@ const chartData = computed(() => {
     gap: 0.5rem;
   }
 }
-
 </style>
