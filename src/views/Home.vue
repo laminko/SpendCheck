@@ -75,7 +75,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import {
   IonPage,
   IonHeader,
@@ -100,10 +101,11 @@ import { useAuth } from '@/composables/useAuth'
 import { useCurrency } from '@/composables/useCurrency'
 
 const loading = ref(false)
-const entries = ref<Array<{ date: string, amount: number, currency: string, category?: string, category_id?: string }>>([])
+const entries = ref<Array<{ id?: string, date: string, amount: number, currency: string, category?: string, category_id?: string, created_at?: string }>>([])
 const { ensureValidSession } = useAuth()
 const { currencyCode, loadSavedCurrency, formatAmount } = useCurrency()
 const showSpendingDialog = ref(false)
+const route = useRoute()
 
 
 const todayTotal = computed(() => {
@@ -187,9 +189,9 @@ const loadEntries = async () => {
   try {
     const { data, error } = await supabase
       .from('spending_entries')
-      .select('date, amount, currency, category, category_id')
+      .select('id, date, amount, currency, category, category_id, created_at')
       .eq('user_id', userId)
-      .order('date', { ascending: false })
+      .order('created_at', { ascending: false })
 
     if (error) throw error
 
@@ -203,6 +205,13 @@ onMounted(() => {
   loadSavedCurrency()
   loadEntries()
 })
+
+// Watch for route changes to this tab
+watch(() => route.path, (newPath) => {
+  if (newPath === '/tabs/home') {
+    loadEntries()
+  }
+}, { immediate: false })
 </script>
 
 <style scoped>
