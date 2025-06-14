@@ -39,8 +39,8 @@
 
       <!-- Entries list -->
       <div v-if="filteredEntries.length > 0" class="entries-section">
-        <ion-card v-for="entry in filteredEntries" :key="`${entry.date}-${entry.amount}`" class="entry-card">
-          <ion-card-content>
+        <ion-item-sliding v-for="entry in filteredEntries" :key="entry.id">
+          <ion-item>
             <div class="entry-content">
               <div class="entry-main">
                 <div class="entry-amount">
@@ -54,8 +54,14 @@
                 {{ formatDate(entry.date, entry.created_at) }}
               </div>
             </div>
-          </ion-card-content>
-        </ion-card>
+          </ion-item>
+          
+          <ion-item-options side="end">
+            <ion-item-option color="danger" @click="confirmDelete(entry)">
+              <ion-icon :icon="trashOutline" slot="icon-only"></ion-icon>
+            </ion-item-option>
+          </ion-item-options>
+        </ion-item-sliding>
       </div>
 
       <!-- Empty state -->
@@ -69,7 +75,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import {
   IonPage,
   IonHeader,
@@ -81,17 +88,23 @@ import {
   IonLabel,
   IonCard,
   IonCardContent,
-  IonIcon
+  IonIcon,
+  IonItem,
+  IonItemSliding,
+  IonItemOptions,
+  IonItemOption,
+  alertController
 } from '@ionic/vue'
-import { receiptOutline } from 'ionicons/icons'
+import { receiptOutline, trashOutline } from 'ionicons/icons'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/composables/useAuth'
 import { useCurrency } from '@/composables/useCurrency'
 
 const selectedPeriod = ref('daily')
-const entries = ref<Array<{ date: string, amount: number, currency: string, category?: string, category_id?: string, created_at?: string }>>([])
+const entries = ref<Array<{ id: string, date: string, amount: number, currency: string, category?: string, category_id?: string, created_at?: string }>>([])
 const { ensureValidSession } = useAuth()
 const { formatAmount } = useCurrency()
+const route = useRoute()
 
 // Filter entries based on selected period
 const filteredEntries = computed(() => {
@@ -185,7 +198,7 @@ const loadEntries = async () => {
   try {
     const { data, error } = await supabase
       .from('spending_entries')
-      .select('date, amount, currency, category, category_id, created_at')
+      .select('id, date, amount, currency, category, category_id, created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
 
@@ -197,9 +210,55 @@ const loadEntries = async () => {
   }
 }
 
+const confirmDelete = async (entry: { id: string, amount: number, category?: string }) => {
+  const alert = await alertController.create({
+    header: 'Delete Entry',
+    message: `Are you sure you want to delete this ${formatAmount(entry.amount, undefined, true)} ${entry.category ? `(${entry.category})` : ''} entry?`,
+    buttons: [
+      {
+        text: 'Cancel',
+        role: 'cancel'
+      },
+      {
+        text: 'Delete',
+        role: 'destructive',
+        handler: () => deleteEntry(entry.id)
+      }
+    ]
+  })
+
+  await alert.present()
+}
+
+const deleteEntry = async (entryId: string) => {
+  const userId = await ensureValidSession()
+
+  try {
+    const { error } = await supabase
+      .from('spending_entries')
+      .delete()
+      .eq('id', entryId)
+      .eq('user_id', userId)
+
+    if (error) throw error
+
+    // Remove entry from local state
+    entries.value = entries.value.filter(entry => entry.id !== entryId)
+  } catch (error) {
+    console.error('Error deleting entry:', error)
+  }
+}
+
 onMounted(() => {
   loadEntries()
 })
+
+// Watch for route changes to this tab
+watch(() => route.path, (newPath) => {
+  if (newPath === '/tabs/history') {
+    loadEntries()
+  }
+}, { immediate: false })
 </script>
 
 <style scoped>
@@ -234,24 +293,21 @@ onMounted(() => {
   margin-top: 1rem;
 }
 
-.entry-card {
-  margin-bottom: 0.5rem;
-}
-
 .entry-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  width: 100%;
+  padding: 16px 0;
 }
 
 .entry-main {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 4px;
 }
 
 .entry-amount {
-  font-size: 1.1rem;
   font-weight: 600;
   color: var(--ion-color-primary);
 }
@@ -264,7 +320,6 @@ onMounted(() => {
 .entry-date {
   font-size: 0.875rem;
   color: var(--ion-color-medium);
-  text-align: right;
 }
 
 .empty-state {
