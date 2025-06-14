@@ -1,5 +1,5 @@
 <template>
-  <div class="line-chart">
+  <div ref="chartContainer" class="line-chart">
     <svg 
       ref="chartSvg"
       :width="chartWidth" 
@@ -104,19 +104,22 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useCurrency } from '@/composables/useCurrency'
+import { useDateUtils } from '@/composables/useDateUtils'
 
 interface Props {
-  entries: Array<{ date: string, amount: number, currency: string }>
+  entries: Array<{ date: string, amount: number, currency: string, category?: string }>
 }
 
 const props = defineProps<Props>()
 const { formatAmount } = useCurrency()
+const { toLocalDateString, getDaysAgo } = useDateUtils()
 
 const chartSvg = ref<SVGElement>()
-const chartWidth = 350
-const chartHeight = 200
+const chartContainer = ref<HTMLElement>()
+const chartWidth = ref(350)
+const chartHeight = ref(200)
 const padding = { top: 20, right: 20, bottom: 40, left: 50 }
 
 const tooltip = ref({
@@ -129,17 +132,22 @@ const tooltip = ref({
 
 const chartData = computed(() => {
   const data = []
-  const today = new Date()
   
   for (let i = 29; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(today.getDate() - i)
-    const dateStr = date.toISOString().split('T')[0]
+    // Get the local date string for i days ago
+    const dateStr = getDaysAgo(i)
+    const date = new Date()
+    date.setDate(date.getDate() - i)
     
-    const entry = props.entries.find(entry => entry.date === dateStr)
-    const hasSpending = !!entry
-    const amount = entry?.amount || 0
-    const currency = entry?.currency || '$'
+    const dayEntries = props.entries.filter(entry => {
+      // Convert UTC date from backend to local timezone and format as YYYY-MM-DD
+      const entryLocalDate = toLocalDateString(entry.date)
+      return entryLocalDate === dateStr
+    })
+    
+    const hasSpending = dayEntries.length > 0
+    const amount = dayEntries.reduce((sum, entry) => sum + entry.amount, 0)
+    const currency = dayEntries[0]?.currency || '$'
     
     data.push({
       date: dateStr,
@@ -160,8 +168,8 @@ const maxAmount = computed(() => {
 })
 
 const dataPoints = computed(() => {
-  const plotWidth = chartWidth - padding.left - padding.right
-  const plotHeight = chartHeight - padding.top - padding.bottom
+  const plotWidth = chartWidth.value - padding.left - padding.right
+  const plotHeight = chartHeight.value - padding.top - padding.bottom
   
   return chartData.value.map((item, index) => {
     const x = padding.left + (index / (chartData.value.length - 1)) * plotWidth
@@ -196,7 +204,7 @@ const linePath = computed(() => {
 
 const horizontalGridLines = computed(() => {
   const lines = []
-  const plotHeight = chartHeight - padding.top - padding.bottom
+  const plotHeight = chartHeight.value - padding.top - padding.bottom
   const steps = 4
   
   for (let i = 0; i <= steps; i++) {
@@ -209,7 +217,7 @@ const horizontalGridLines = computed(() => {
 
 const verticalGridLines = computed(() => {
   const lines = []
-  const plotWidth = chartWidth - padding.left - padding.right
+  const plotWidth = chartWidth.value - padding.left - padding.right
   const step = 7 // Show grid every 7 days
   
   for (let i = 0; i < chartData.value.length; i += step) {
@@ -223,7 +231,7 @@ const verticalGridLines = computed(() => {
 const yAxisLabels = computed(() => {
   const labels = []
   const steps = 4
-  const plotHeight = chartHeight - padding.top - padding.bottom
+  const plotHeight = chartHeight.value - padding.top - padding.bottom
   
   for (let i = 0; i <= steps; i++) {
     const value = (maxAmount.value / steps) * (steps - i)
@@ -232,7 +240,7 @@ const yAxisLabels = computed(() => {
     labels.push({
       value,
       y,
-      text: value === 0 ? '0' : formatAmount(value, undefined, true)
+      text: value === 0 ? '0' : formatAmount(value)
     })
   }
   
@@ -241,7 +249,7 @@ const yAxisLabels = computed(() => {
 
 const xAxisLabels = computed(() => {
   const labels = []
-  const plotWidth = chartWidth - padding.left - padding.right
+  const plotWidth = chartWidth.value - padding.left - padding.right
   const step = 7 // Show label every 7 days
   
   for (let i = 0; i < chartData.value.length; i += step) {
@@ -293,20 +301,45 @@ const onMouseMove = (event: MouseEvent) => {
 const hideTooltip = () => {
   tooltip.value.show = false
 }
+
+// Responsive functionality
+const updateSize = () => {
+  if (chartContainer.value) {
+    const containerWidth = chartContainer.value.clientWidth
+    chartWidth.value = Math.max(containerWidth, 300) // Minimum width of 300px
+    chartHeight.value = Math.min(containerWidth * 0.6, 250) // Maintain aspect ratio, max height 250px
+  }
+}
+
+const resizeObserver = new ResizeObserver(() => {
+  updateSize()
+})
+
+onMounted(() => {
+  updateSize()
+  if (chartContainer.value) {
+    resizeObserver.observe(chartContainer.value)
+  }
+})
+
+onUnmounted(() => {
+  resizeObserver.disconnect()
+})
 </script>
 
 <style scoped>
 .line-chart {
   position: relative;
   width: 100%;
-  display: flex;
-  justify-content: center;
+  display: block;
 }
 
 .chart-svg {
   background: white;
   border-radius: 8px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  height: auto;
 }
 
 .line-path {
@@ -354,10 +387,4 @@ const hideTooltip = () => {
   font-weight: 600;
 }
 
-@media (max-width: 480px) {
-  .chart-svg {
-    width: 100%;
-    height: auto;
-  }
-}
 </style>

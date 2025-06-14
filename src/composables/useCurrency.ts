@@ -53,26 +53,35 @@ export const useCurrency = () => {
     }
   }
 
-  const formatAmount = (amount: number, currency?: Currency, compact = false) => {
+  const formatAmount = (amount: number, currency?: Currency) => {
     const curr = currency || currentCurrency.value
     
-    // For compact format (stats), use metric abbreviations for large numbers
-    if (compact && amount >= 1000) {
-      let compactAmount: string
-      if (amount >= 1000000) {
-        compactAmount = (amount / 1000000).toFixed(amount >= 10000000 ? 0 : 1) + 'M'
-      } else if (amount >= 1000) {
-        compactAmount = (amount / 1000).toFixed(amount >= 10000 ? 0 : 1) + 'K'
-      } else {
-        compactAmount = amount.toString()
-      }
-      return `${curr.symbol}${compactAmount}`
-    }
-    
-    // Special formatting for currencies
+    // Special formatting for currencies that don't use decimals
     if (curr.code === 'JPY' || curr.code === 'KRW') {
       // No decimal places for these currencies
-      return `${curr.symbol}${Math.round(amount).toLocaleString()}`
+      const roundedAmount = Math.round(amount)
+      if (roundedAmount >= 100000) {
+        if (roundedAmount >= 1000000) {
+          return `${curr.symbol}${(roundedAmount / 1000000).toFixed(roundedAmount >= 10000000 ? 0 : 1)}M`
+        } else {
+          return `${curr.symbol}${(roundedAmount / 1000).toFixed(0)}K`
+        }
+      }
+      return `${curr.symbol}${roundedAmount.toLocaleString()}`
+    }
+    
+    // Use metric abbreviations for amounts >= 100K
+    if (amount >= 100000) {
+      if (amount >= 1000000) {
+        return `${curr.symbol}${(amount / 1000000).toFixed(amount >= 10000000 ? 0 : 1)}M`
+      } else {
+        return `${curr.symbol}${(amount / 1000).toFixed(0)}K`
+      }
+    }
+    
+    // Show full amount with commas for readability up to 100K
+    if (amount >= 1000) {
+      return `${curr.symbol}${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`
     }
     
     return `${curr.symbol}${amount.toFixed(2)}`

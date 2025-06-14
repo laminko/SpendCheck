@@ -1,27 +1,31 @@
 <template>
-  <div id="app">
-    <router-view />
-  </div>
+  <ion-app>
+    <ion-router-outlet />
+  </ion-app>
 </template>
 
+<script setup lang="ts">
+import { IonApp, IonRouterOutlet } from '@ionic/vue'
+</script>
+
 <style>
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* Custom CSS variables for theming */
+:root {
+  --ion-color-primary: #3b82f6;
+  --ion-color-primary-rgb: 59, 130, 246;
+  --ion-color-primary-contrast: #ffffff;
+  --ion-color-primary-contrast-rgb: 255, 255, 255;
+  --ion-color-primary-shade: #3474e6;
+  --ion-color-primary-tint: #4f8ff7;
+
+  --ion-background-color: #f8fafc;
+  --ion-text-color: #1f2937;
 }
 
+/* Keep existing mobile optimizations */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #f8fafc;
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   -webkit-tap-highlight-color: transparent;
-}
-
-#app {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
 }
 </style>

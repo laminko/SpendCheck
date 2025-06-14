@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/logo.svg" alt="SpendCheck Logo" width="120" height="120">
+  <img src="public/logo.png" alt="SpendCheck Logo" width="120" height="120">
   
   # SpendCheck
 </div>
@@ -15,14 +15,13 @@
 
 ## ✨ Features
 
-- **🎯 Minimal Attention Design** - One-tap spending logging
-- **💰 Multi-Currency Support** - 21 major world currencies
-- **📊 Dual Chart Views** - GitHub-style grid or line chart
-- **🔥 Streak Tracking** - Monitor spending habits
-- **📱 Mobile-First** - Optimized for phones and tablets
-- **🌐 Anonymous Usage** - No signup required
-- **⚡ Real-time Updates** - Powered by Supabase
-- **🎨 Clean UI** - Modern, responsive design
+**Track Daily Spending**
+- Tap button to log spending
+- Choose categories or skip them
+- See your spending patterns
+- Works on any device
+
+**That's it.** No signup, no complexity.
 
 ## 🚀 Live Demo
 
@@ -66,132 +65,49 @@ Visit the live app: **[SpendCheck App](https://spend-check-eta.vercel.app)**
 
 ## 🏗️ Tech Stack
 
-| Technology | Purpose | Why |
-|------------|---------|-----|
-| **Vue 3** | Frontend Framework | Composition API, TypeScript support |
-| **TypeScript** | Type Safety | Better DX and fewer runtime errors |
-| **Vite** | Build Tool | Fast HMR and optimized builds |
-| **Supabase** | Backend & Database | Real-time, scalable, easy auth |
-| **Vercel** | Deployment | Zero-config, global CDN |
+**Frontend:** Vue 3 + TypeScript + Ionic Vue  
+**Backend:** Supabase (PostgreSQL + Real-time)  
+**Build:** Vite  
+**Deploy:** Vercel  
+**Mobile:** Capacitor (iOS/Android ready)
 
-## 📊 Supported Currencies
+## 💰 Currencies
 
-| Currency | Symbol | Code |
-|----------|--------|------|
-| US Dollar | $ | USD |
-| Euro | € | EUR |
-| British Pound | £ | GBP |
-| Japanese Yen | ¥ | JPY |
-| Thai Baht | ฿ | THB |
-| ... and 16 more | | |
-
-[View all supported currencies →](./src/composables/useCurrency.ts)
-
-## 🎯 Architecture
-
-```
-SpendCheck/
-├── src/
-│   ├── components/          # Reusable UI components
-│   │   ├── ChartToggle.vue  # Grid/Line chart switcher
-│   │   ├── CurrencyPicker.vue # Multi-currency selector
-│   │   ├── LineChart.vue    # SVG line chart
-│   │   └── SpendingChart.vue # Grid chart container
-│   ├── composables/         # Vue composition functions
-│   │   ├── useAuth.ts       # Anonymous user management
-│   │   └── useCurrency.ts   # Currency formatting & selection
-│   ├── lib/
-│   │   └── supabase.ts      # Database client & types
-│   └── views/
-│       └── Home.vue         # Main app interface
-├── docs/                    # Documentation site
-└── .github/workflows/       # CI/CD automation
-```
+**21 supported currencies** including USD, EUR, GBP, JPY, THB, and more.  
+[View full list →](./src/composables/useCurrency.ts)
 
 ## 🚀 Deployment
 
-### Deployment
+**Live App:** [spend-check-eta.vercel.app](https://spend-check-eta.vercel.app)
 
-The app is deployed on Vercel with automatic deployments enabled:
-- **Automatic**: Every push to `main` triggers Vercel deployment
-- **Manual**: Use Vercel dashboard or CLI for manual deployments
-
-```bash
-# Build for production locally
-npm run build
-
-# Deploy via Vercel CLI (optional)
-npm install -g vercel
-vercel --prod
-```
+Auto-deploys from `main` branch to Vercel. Build locally with `npm run build`.
 
 ## 🤝 Contributing
 
-We welcome contributions! Here's how:
+1. Fork the repo
+2. Create feature branch: `git checkout -b feature/name`
+3. Commit changes: `git commit -m "feat: description"`
+4. Push and create PR
 
-1. **Fork the repository**
-2. **Create a feature branch**
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Make your changes**
-4. **Commit with conventional commits**
-   ```bash
-   git commit -m "feat: add amazing feature"
-   ```
-5. **Push and create a Pull Request**
+Use TypeScript, Vue 3 Composition API, and test on mobile.
 
-### Development Guidelines
+## 📝 Development
 
-- Follow TypeScript best practices
-- Use Vue 3 Composition API
-- Write meaningful commit messages
-- Test on mobile devices
-- Keep components small and focused
-
-## 📝 Scripts
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview production build |
-| `npm run typecheck` | Check TypeScript types |
-
-## 🐛 Known Issues
-
-- None currently! 🎉
-
-Report issues on [GitHub Issues](https://github.com/laminko/SpendCheck/issues)
+```bash
+npm run dev        # Start dev server
+npm run build      # Build for production  
+npm run typecheck  # Check TypeScript
+```
 
 ## 📚 Documentation
 
 - [Supabase Setup Guide](./SUPABASE_SETUP.md)
-- [API Documentation](https://laminko.github.io/SpendCheck/)
 - [Contributing Guide](./CONTRIBUTING.md)
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-- **Vue.js Team** - For the amazing framework
-- **Supabase Team** - For the backend-as-a-service platform
-- **Vercel Team** - For seamless deployment
-- **Claude Code** - For development assistance
-
-## 📈 Project Stats
-
-![GitHub stars](https://img.shields.io/github/stars/laminko/SpendCheck?style=social)
-![GitHub forks](https://img.shields.io/github/forks/laminko/SpendCheck?style=social)
-![GitHub issues](https://img.shields.io/github/issues/laminko/SpendCheck)
-![GitHub last commit](https://img.shields.io/github/last-commit/laminko/SpendCheck)
+MIT License - see [LICENSE](./LICENSE) file.
 
 ---
 
-<div align="center">
-  <strong>Built with ❤️ for simple spending tracking</strong>
-  <br>
-  <a href="https://spend-check-eta.vercel.app">Try SpendCheck Now</a>
-</div>
+**[Try SpendCheck →](https://spend-check-eta.vercel.app)**
