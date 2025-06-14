@@ -11,6 +11,7 @@
         <div 
           v-for="(day, index) in chartData" 
           :key="index"
+          :id="`chart-day-${index}`"
           class="chart-day"
           :class="{ 
             'has-spending': day.hasSpending,
@@ -18,6 +19,7 @@
           }"
           :style="{ opacity: day.hasSpending ? day.intensity : (day.isVisible ? 0.5 : 0.15) }"
           :title="day.isVisible ? `${day.date}: ${day.hasSpending ? `${day.currency || '$'}${day.amount.toFixed(2)}` : 'No spending'}` : ''"
+          @click="day.isVisible ? openPopover($event, day, index) : null"
         >
         </div>
       </div>
@@ -41,23 +43,94 @@
         </div>
       </div>
     </div>
+
+    <!-- Daily Spending Popover -->
+    <ion-popover
+      :is-open="isPopoverOpen"
+      :trigger="popoverTrigger"
+      :dismiss-on-select="true"
+      @didDismiss="closePopover"
+      placement="top"
+    >
+      <ion-content class="popover-content">
+        <div class="spending-detail">
+          <div class="spending-date">{{ formatDate(selectedDay?.date || '') }}</div>
+          <div class="spending-amount" :class="{ 'no-spending': !selectedDay?.hasSpending }">
+            {{ selectedDay?.hasSpending ? formatAmount(selectedDay.amount, selectedDay.currency) : 'No spending' }}
+          </div>
+          <div v-if="selectedDay?.hasSpending" class="spending-entries">
+            {{ getEntriesForDay(selectedDay.date || '').length }} {{ getEntriesForDay(selectedDay.date || '').length === 1 ? 'entry' : 'entries' }}
+          </div>
+        </div>
+      </ion-content>
+    </ion-popover>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed } from 'vue'
+import { IonPopover, IonContent } from '@ionic/vue'
 import ChartToggle from './ChartToggle.vue'
 import LineChart from './LineChart.vue'
+import { CURRENCIES } from '@/composables/useCurrency'
 
 interface Props {
   entries: Array<{ date: string, amount: number, currency: string, category?: string }>
 }
 
+interface ChartDay {
+  date: string
+  hasSpending: boolean
+  amount: number
+  currency: string
+  intensity: number
+  isVisible: boolean
+}
+
 const props = defineProps<Props>()
 const chartType = ref<'grid' | 'line'>('grid')
 
+// Popover state
+const isPopoverOpen = ref(false)
+const popoverTrigger = ref<string>('')
+const selectedDay = ref<ChartDay | null>(null)
+
 const updateChartType = (type: 'grid' | 'line') => {
   chartType.value = type
+}
+
+// Popover methods
+const openPopover = (_event: Event, day: ChartDay, index: number) => {
+  selectedDay.value = day
+  popoverTrigger.value = `chart-day-${index}`
+  isPopoverOpen.value = true
+}
+
+const closePopover = () => {
+  isPopoverOpen.value = false
+  selectedDay.value = null
+  popoverTrigger.value = ''
+}
+
+// Helper methods
+const formatDate = (dateStr: string) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('en-US', { 
+    weekday: 'short', 
+    month: 'short', 
+    day: 'numeric' 
+  })
+}
+
+const formatAmount = (amount: number, currency: string) => {
+  const currencyData = CURRENCIES.find(c => c.code === currency)
+  const symbol = currencyData?.symbol || currency
+  return `${symbol}${amount.toFixed(2)}`
+}
+
+const getEntriesForDay = (dateStr: string) => {
+  return props.entries.filter(entry => entry.date === dateStr)
 }
 
 const chartData = computed(() => {
@@ -268,5 +341,45 @@ const chartData = computed(() => {
     font-size: 0.7rem;
     gap: 0.5rem;
   }
+}
+
+/* Popover Styles */
+.popover-content {
+  --padding-start: 0;
+  --padding-end: 0;
+  --padding-top: 0;
+  --padding-bottom: 0;
+}
+
+.spending-detail {
+  padding: 1rem;
+  text-align: center;
+  min-width: 150px;
+}
+
+.spending-date {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.spending-amount {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #3b82f6;
+  margin-bottom: 0.25rem;
+}
+
+.spending-amount.no-spending {
+  color: #9ca3af;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.spending-entries {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-style: italic;
 }
 </style>
