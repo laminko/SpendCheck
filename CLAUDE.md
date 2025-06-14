@@ -13,15 +13,15 @@ This file contains the project-specific configuration for Claude Code.
 - **Fix TypeScript warnings**: Remove unused variables (e.g., diffDays error in History.vue)  
 - **Verify clean build output**: Ensure no TS errors or build failures before push
 
-## Bug Handling Workflow
+## Issue/Feature Handling Workflow
 
-When a human reports a bug, follow this workflow:
-1. **Create an issue** for the bug report
+When a human reports a bug or requests a feature, follow this workflow:
+1. **Create a GitHub issue** for the bug report or feature request
 2. **Switch to dev branch** and fetch updates
 3. **Create a new branch** for the issue
 4. **Think and plan** the solution
 5. **Ask for implementation approval** before proceeding
-6. **Work on the fix** until the issue is resolved
+6. **Work on the fix/feature** until the issue is resolved
 7. **After issue is resolved**, switch back to dev branch and fetch updates
 
 ## Important Instruction Reminders
