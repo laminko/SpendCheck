@@ -2,7 +2,10 @@ import { createApp } from 'vue'
 import { IonicVue } from '@ionic/vue'
 import { createRouter, createWebHistory } from '@ionic/vue-router'
 import App from './App.vue'
+import Tabs from './views/Tabs.vue'
 import Home from './views/Home.vue'
+import History from './views/History.vue'
+import Graph from './views/Graph.vue'
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css'
@@ -21,7 +24,32 @@ import '@ionic/vue/css/flex-utils.css'
 import '@ionic/vue/css/display.css'
 
 const routes = [
-  { path: '/', name: 'Home', component: Home }
+  {
+    path: '/',
+    redirect: '/tabs/home'
+  },
+  {
+    path: '/tabs/',
+    component: Tabs,
+    children: [
+      {
+        path: '',
+        redirect: 'home'
+      },
+      {
+        path: 'home',
+        component: Home
+      },
+      {
+        path: 'history',
+        component: History
+      },
+      {
+        path: 'graph',
+        component: Graph
+      }
+    ]
+  }
 ]
 
 const router = createRouter({
