@@ -18,6 +18,31 @@
         <ion-datetime-button datetime="spending-date"></ion-datetime-button>
       </ion-item>
 
+      <!-- DateTime Modal -->
+      <ion-modal keep-contents-mounted="true">
+        <ion-datetime 
+          id="spending-date"
+          v-model="selectedDate"
+          presentation="date-time"
+          mode="ios"
+          :max="maxDate"
+          :formatOptions="{
+            date: {
+              weekday: 'short',
+              month: 'short',
+              day: '2-digit',
+            },
+            time: {
+              hour: '2-digit',
+              minute: '2-digit',
+            },
+          }"
+          @ion-change="onDateChange"
+        >
+          <div slot="title">Select Date & Time</div>
+        </ion-datetime>
+      </ion-modal>
+
       <!-- Amount Input -->
       <ion-item>
         <ion-label position="stacked">Amount ({{ currencySymbol }})</ion-label>
@@ -81,18 +106,6 @@
     </ion-content>
 
   </ion-modal>
-
-  <ion-modal keep-contents-mounted="true">
-    <ion-datetime 
-      id="spending-date"
-      v-model="selectedDate"
-      presentation="date-time"
-      :max="maxDate"
-      @ion-change="onDateChange"
-    >
-      <div slot="title">Select Date & Time</div>
-    </ion-datetime>
-  </ion-modal>
 </template>
 
 <script setup lang="ts">
@@ -137,7 +150,17 @@ const { categories, loadCategories, addCategory } = useCategoryStore()
 
 // Helper function to get local datetime string
 const getLocalDatetimeString = () => {
-  return new Date().toISOString()
+  const now = new Date()
+  // Format as YYYY-MM-DDTHH:mm:SS without milliseconds and timezone
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  const hours = String(now.getHours()).padStart(2, '0')
+  const minutes = String(now.getMinutes()).padStart(2, '0')
+  const seconds = String(now.getSeconds()).padStart(2, '0')
+  
+  const dateString = `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`
+  return dateString
 }
 
 // Reactive data
@@ -149,7 +172,7 @@ const selectedDate = ref(getLocalDatetimeString())
 
 // Computed
 const maxDate = computed(() => {
-  return new Date().toISOString()
+  return getLocalDatetimeString()
 })
 
 // Computed
@@ -206,6 +229,8 @@ const saveSpending = async () => {
     selectedCategory.value = categoryId || ''
   }
   customCategory.value = ''
+  
+  // Reset selectedDate to current time
   selectedDate.value = getLocalDatetimeString()
 }
 
@@ -213,8 +238,13 @@ const resetForm = () => {
   amount.value = ''
   selectedCategory.value = ''
   customCategory.value = ''
-  selectedDate.value = getLocalDatetimeString()
+  // Don't reset selectedDate here - let it keep the current value
 }
+
+// Watch selectedDate changes
+watch(selectedDate, () => {
+  // selectedDate watcher - removed console logs
+}, { immediate: true })
 
 // Load categories on component mount
 onMounted(() => {
@@ -224,6 +254,8 @@ onMounted(() => {
 // Watch for dialog opening to focus amount input
 watch(() => props.isOpen, (isOpen) => {
   if (isOpen) {
+    // Reset date to current time when dialog opens
+    selectedDate.value = getLocalDatetimeString()
     nextTick(() => {
       amountInput.value?.$el?.querySelector('input')?.focus()
     })
