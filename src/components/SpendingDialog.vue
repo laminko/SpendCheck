@@ -13,13 +13,15 @@
     
     <ion-content class="ion-padding">
       <!-- Date Selector -->
-      <ion-item>
-        <ion-label position="stacked">Date</ion-label>
-        <ion-datetime-button datetime="spending-date"></ion-datetime-button>
-      </ion-item>
+      <div class="date-selector">
+        <div class="date-wrapper">
+          <label class="date-label">Date</label>
+          <ion-datetime-button datetime="spending-date"></ion-datetime-button>
+        </div>
+      </div>
 
       <!-- DateTime Modal -->
-      <ion-modal keep-contents-mounted="true">
+      <ion-modal keep-contents-mounted="true" class="datetime-modal">
         <ion-datetime 
           id="spending-date"
           v-model="selectedDate"
@@ -39,7 +41,6 @@
           }"
           @ion-change="onDateChange"
         >
-          <div slot="title">Select Date & Time</div>
         </ion-datetime>
       </ion-modal>
 
@@ -266,4 +267,43 @@ watch(() => props.isOpen, (isOpen) => {
   }
 })
 </script>
+
+<style scoped>
+/* Date selector styling */
+.date-selector {
+  margin-bottom: 16px;
+  padding-left: 16px;
+}
+
+.date-wrapper {
+  padding: 12px 0;
+  --border-color: var(--ion-item-border-color, var(--ion-border-color, var(--ion-color-step-250, var(--ion-background-color-step-250, #c8c7cc))));
+  border-bottom: 0.55px solid var(--border-color);
+}
+
+.date-label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--color);
+  margin-bottom: 2px;
+  letter-spacing: 0.03em;
+  font-family: var(--ion-font-family, inherit);
+}
+
+/* iOS-style DateTime modal styling */
+.datetime-modal {
+  --border-radius: 16px;
+  --box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  --background: rgba(255, 255, 255, 0.95);
+  --backdrop-opacity: 0.4;
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+}
+
+.datetime-modal::part(content) {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+}
+</style>
 
