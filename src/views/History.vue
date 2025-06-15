@@ -41,7 +41,7 @@
                   </div>
                 </div>
                 <div class="entry-time">
-                  {{ formatEntryTime(entry.created_at || entry.date) }}
+                  {{ formatEntryTime(entry.date || entry.created_at || '') }}
                 </div>
               </div>
             </ion-item>
@@ -127,7 +127,7 @@ const groupedEntries = computed(() => {
   return sortedDates.map(date => ({
     date,
     entries: groups[date].sort((a, b) => 
-      new Date(b.created_at || b.date).getTime() - new Date(a.created_at || a.date).getTime()
+      new Date(b.date || b.created_at || '').getTime() - new Date(a.date || a.created_at || '').getTime()
     ),
     total: groups[date].reduce((sum, entry) => sum + entry.amount, 0),
     count: groups[date].length
