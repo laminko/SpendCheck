@@ -52,8 +52,25 @@ CREATE TABLE public.spending_entries (
     created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- Enable RLS
+-- Create the categories table
+CREATE TABLE public.categories (
+    id uuid NOT NULL DEFAULT gen_random_uuid(),
+    user_id text NOT NULL,
+    name text NOT NULL,
+    icon text NULL,
+    color text NULL,
+    is_default boolean NULL DEFAULT false,
+    created_at timestamp with time zone NOT NULL DEFAULT timezone('utc'::text, now()),
+    CONSTRAINT categories_pkey PRIMARY KEY (id),
+    CONSTRAINT categories_user_id_name_key UNIQUE (user_id, name)
+);
+
+-- Create index for categories
+CREATE INDEX IF NOT EXISTS idx_categories_user_id ON public.categories USING btree (user_id);
+
+-- Enable RLS on both tables
 ALTER TABLE public.spending_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 
 -- Create policy to allow users to see only their own data
 CREATE POLICY "Users can view own spending entries" ON public.spending_entries
@@ -69,6 +86,19 @@ CREATE POLICY "Users can update own spending entries" ON public.spending_entries
 
 -- Create policy to allow users to delete their own data
 CREATE POLICY "Users can delete own spending entries" ON public.spending_entries
+    FOR DELETE USING (user_id = current_setting('request.jwt.claims', true)::json->>'sub' OR user_id LIKE 'anon_%');
+
+-- Create policies for categories table
+CREATE POLICY "Users can view own categories" ON public.categories
+    FOR SELECT USING (user_id = current_setting('request.jwt.claims', true)::json->>'sub' OR user_id LIKE 'anon_%');
+
+CREATE POLICY "Users can insert own categories" ON public.categories
+    FOR INSERT WITH CHECK (user_id = current_setting('request.jwt.claims', true)::json->>'sub' OR user_id LIKE 'anon_%');
+
+CREATE POLICY "Users can update own categories" ON public.categories
+    FOR UPDATE USING (user_id = current_setting('request.jwt.claims', true)::json->>'sub' OR user_id LIKE 'anon_%');
+
+CREATE POLICY "Users can delete own categories" ON public.categories
     FOR DELETE USING (user_id = current_setting('request.jwt.claims', true)::json->>'sub' OR user_id LIKE 'anon_%');
 ```
 
@@ -98,8 +128,10 @@ Run your app with `npm run dev` and try logging a spending entry. Check the Supa
 ## Notes
 
 - The policies allow anonymous users (with IDs starting with 'anon_') to access their own data
-- RLS ensures users can only see/modify their own spending entries
+- RLS ensures users can only see/modify their own spending entries and categories
 - The `amount` field stores currency values as numeric type for precision
 - The `currency` field stores the 3-letter currency code (USD, EUR, etc.)
 - The `category` field stores spending categories (optional, nullable for backward compatibility)
+- The `categories` table stores custom user categories with optional icons and colors
 - Mixed currencies are supported - each entry can have its own currency
+- Categories have a unique constraint per user to prevent duplicates
