@@ -36,8 +36,8 @@
                   <div class="entry-amount">
                     {{ formatAmount(entry.amount) }}
                   </div>
-                  <div class="entry-category" v-if="entry.category">
-                    {{ entry.category }}
+                  <div class="entry-category">
+                    {{ entry.category || '- No category -' }}
                   </div>
                 </div>
                 <div class="entry-time">
