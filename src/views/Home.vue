@@ -137,7 +137,8 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
       date: date
     })
 
-    showSpendingDialog.value = false
+    // Keep dialog open for multiple entries
+    // showSpendingDialog.value = false
 
     // Show success toast
     const toast = await toastController.create({
