@@ -24,6 +24,14 @@
           </ion-item>
         </div>
 
+        <!-- Date Selector -->
+        <div class="date-section">
+          <ion-item>
+            <ion-label position="stacked">Date</ion-label>
+            <ion-datetime-button datetime="spending-date"></ion-datetime-button>
+          </ion-item>
+        </div>
+
         <!-- Category Selector -->
         <div class="category-section">
           <ion-item>
@@ -75,6 +83,16 @@
         </ion-button>
       </div>
     </div>
+
+    <ion-modal>
+      <ion-datetime 
+        id="spending-date"
+        v-model="selectedDate"
+        presentation="date-time"
+        :max="maxDate"
+        @ion-change="onDateChange"
+      ></ion-datetime>
+    </ion-modal>
   </ion-modal>
 </template>
 
@@ -88,7 +106,9 @@ import {
   IonSelect, 
   IonSelectOption,
   IonItem,
-  IonLabel
+  IonLabel,
+  IonDatetime,
+  IonDatetimeButton
 } from '@ionic/vue'
 import { closeOutline, checkmarkOutline } from 'ionicons/icons'
 import { useCurrency } from '@/composables/useCurrency'
@@ -104,7 +124,7 @@ const props = defineProps<Props>()
 // Emits
 const emit = defineEmits<{
   close: []
-  save: [data: { amount: number; category?: string; categoryId?: string }]
+  save: [data: { amount: number; category?: string; categoryId?: string; date?: string }]
 }>()
 
 // Composables
@@ -116,6 +136,12 @@ const amount = ref('')
 const selectedCategory = ref('')
 const customCategory = ref('')
 const amountInput = ref()
+const selectedDate = ref(new Date().toISOString())
+
+// Computed
+const maxDate = computed(() => {
+  return new Date().toISOString()
+})
 
 // Computed
 const isValid = computed(() => {
@@ -129,6 +155,10 @@ const isValid = computed(() => {
 const closeDialog = () => {
   emit('close')
   resetForm()
+}
+
+const onDateChange = (event: any) => {
+  selectedDate.value = event.detail.value
 }
 
 const saveSpending = async () => {
@@ -157,7 +187,8 @@ const saveSpending = async () => {
   emit('save', {
     amount: parseFloat(amount.value),
     categoryId: categoryId === 'custom' ? undefined : categoryId,
-    category: categoryName
+    category: categoryName,
+    date: selectedDate.value
   })
   
   // Reset form but keep the selected category if it was a custom one that was just created
@@ -172,6 +203,7 @@ const resetForm = () => {
   amount.value = ''
   selectedCategory.value = ''
   customCategory.value = ''
+  selectedDate.value = new Date().toISOString()
 }
 
 // Load categories on component mount
@@ -219,12 +251,14 @@ watch(() => props.isOpen, (isOpen) => {
 }
 
 .amount-section,
+.date-section,
 .category-section,
 .custom-category-section {
   margin-bottom: 1rem;
 }
 
 .amount-section ion-item,
+.date-section ion-item,
 .category-section ion-item,
 .custom-category-section ion-item {
   --border-radius: 12px;

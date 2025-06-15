@@ -67,6 +67,7 @@ export function useSpendingStore() {
     currency: string
     category?: string
     category_id?: string
+    date?: string
   }) => {
     const userId = await ensureValidSession()
 
@@ -78,7 +79,8 @@ export function useSpendingStore() {
           amount: entryData.amount,
           currency: entryData.currency,
           category: entryData.category || null,
-          category_id: entryData.category_id || null
+          category_id: entryData.category_id || null,
+          date: entryData.date || new Date().toISOString()
         }])
 
       if (error) throw error
