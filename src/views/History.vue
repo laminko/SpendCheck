@@ -145,10 +145,9 @@ const formatDateDivider = (dateString: string) => {
 }
 
 const formatEntryTime = (timestamp: string) => {
-
-  // Use yyyy-mm-dd format with AM/PM (e.g., "2024-12-14 2:30 PM")
-  return moment(timestamp).format('YYYY-MM-DD h:mm A')
-
+  // Convert UTC timestamp to user's local timezone
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  return moment.tz(timestamp, userTimezone).format('YYYY-MM-DD h:mm A')
 }
 
 
