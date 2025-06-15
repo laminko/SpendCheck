@@ -36,12 +36,12 @@
                   <div class="entry-amount">
                     {{ formatAmount(entry.amount) }}
                   </div>
-                  <div class="entry-category" v-if="entry.category">
-                    {{ entry.category }}
+                  <div class="entry-category">
+                    {{ entry.category || '- No category -' }}
                   </div>
                 </div>
                 <div class="entry-time">
-                  {{ formatEntryTime(entry.created_at || entry.date) }}
+                  {{ formatEntryTime(entry.date || entry.created_at || '') }}
                 </div>
               </div>
             </ion-item>
@@ -127,7 +127,7 @@ const groupedEntries = computed(() => {
   return sortedDates.map(date => ({
     date,
     entries: groups[date].sort((a, b) => 
-      new Date(b.created_at || b.date).getTime() - new Date(a.created_at || a.date).getTime()
+      new Date(b.date || b.created_at || '').getTime() - new Date(a.date || a.created_at || '').getTime()
     ),
     total: groups[date].reduce((sum, entry) => sum + entry.amount, 0),
     count: groups[date].length
@@ -145,10 +145,9 @@ const formatDateDivider = (dateString: string) => {
 }
 
 const formatEntryTime = (timestamp: string) => {
-
-  // Use yyyy-mm-dd format with AM/PM (e.g., "2024-12-14 2:30 PM")
-  return moment(timestamp).format('YYYY-MM-DD h:mm A')
-
+  // Convert UTC timestamp to user's local timezone
+  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+  return moment.tz(timestamp, userTimezone).format('YYYY-MM-DD h:mm A')
 }
 
 

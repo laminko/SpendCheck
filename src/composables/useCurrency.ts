@@ -19,6 +19,7 @@ export const CURRENCIES: Currency[] = [
   { code: 'KRW', symbol: '₩', name: 'South Korean Won' },
   { code: 'BRL', symbol: 'R$', name: 'Brazilian Real' },
   { code: 'MXN', symbol: '$', name: 'Mexican Peso' },
+  { code: 'MMK', symbol: 'Ks', name: 'Myanmar Kyat' },
   { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar' },
   { code: 'HKD', symbol: 'HK$', name: 'Hong Kong Dollar' },
   { code: 'NOK', symbol: 'kr', name: 'Norwegian Krone' },
