@@ -117,7 +117,7 @@ const handleSpendButtonClick = async () => {
   showSpendingDialog.value = true
 }
 
-const logSpending = async (spendingData: { amount: number; category?: string; categoryId?: string }) => {
+const logSpending = async (spendingData: { amount: number; category?: string; categoryId?: string; date?: string }) => {
   // Haptic feedback for save action
   try {
     await Haptics.impact({ style: ImpactStyle.Light })
@@ -126,14 +126,15 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
   }
 
   loading.value = true
-  const { amount, category, categoryId } = spendingData
+  const { amount, category, categoryId, date } = spendingData
 
   try {
     await addEntry({
       amount: amount,
       currency: currencyCode.value,
       category: category || undefined,
-      category_id: categoryId || undefined
+      category_id: categoryId || undefined,
+      date: date
     })
 
     showSpendingDialog.value = false
