@@ -216,11 +216,15 @@ const saveSpending = async () => {
     categoryName = category?.name || selectedCategory.value
   }
 
+  // Convert local datetime to UTC ISO string for database storage
+  const localDate = new Date(selectedDate.value)
+  const utcISOString = localDate.toISOString()
+
   emit('save', {
     amount: parseFloat(amount.value),
     categoryId: categoryId === 'custom' ? undefined : categoryId,
     category: categoryName,
-    date: selectedDate.value
+    date: utcISOString
   })
   
   // Reset form but keep the selected category if it was a custom one that was just created
