@@ -84,15 +84,18 @@
       </div>
     </div>
 
-    <ion-modal>
-      <ion-datetime 
-        id="spending-date"
-        v-model="selectedDate"
-        presentation="date-time"
-        :max="maxDate"
-        @ion-change="onDateChange"
-      ></ion-datetime>
-    </ion-modal>
+  </ion-modal>
+
+  <ion-modal>
+    <ion-datetime 
+      id="spending-date"
+      v-model="selectedDate"
+      presentation="date-time"
+      :max="maxDate"
+      @ion-change="onDateChange"
+    >
+      <div slot="title">Select Date & Time</div>
+    </ion-datetime>
   </ion-modal>
 </template>
 
