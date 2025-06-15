@@ -1,79 +1,75 @@
 <template>
   <ion-modal :is-open="isOpen" @did-dismiss="closeDialog">
-    <div class="spending-dialog">
-      <div class="dialog-header">
-        <h2>Add Spending</h2>
-        <ion-button fill="clear" size="small" @click="closeDialog">
-          <ion-icon :icon="closeOutline"></ion-icon>
-        </ion-button>
-      </div>
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Add Spending</ion-title>
+        <ion-buttons slot="end">
+          <ion-button fill="clear" @click="closeDialog">
+            <ion-icon :icon="closeOutline"></ion-icon>
+          </ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    
+    <ion-content class="ion-padding">
+      <!-- Date Selector -->
+      <ion-item>
+        <ion-label position="stacked">Date</ion-label>
+        <ion-datetime-button datetime="spending-date"></ion-datetime-button>
+      </ion-item>
 
-      <div class="dialog-content">
-        <!-- Amount Input -->
-        <div class="amount-section">
-          <ion-item>
-            <ion-label position="stacked">Amount ({{ currencySymbol }})</ion-label>
-            <ion-input
-              ref="amountInput"
-              v-model="amount"
-              type="number"
-              placeholder="0.00"
-              step="0.01"
-              min="0"
-            />
-          </ion-item>
-        </div>
+      <!-- Amount Input -->
+      <ion-item>
+        <ion-label position="stacked">Amount ({{ currencySymbol }})</ion-label>
+        <ion-input
+          ref="amountInput"
+          v-model="amount"
+          type="number"
+          placeholder="0.00"
+          step="0.01"
+          min="0"
+        />
+      </ion-item>
 
-        <!-- Date Selector -->
-        <div class="date-section">
-          <ion-item>
-            <ion-label position="stacked">Date</ion-label>
-            <ion-datetime-button datetime="spending-date"></ion-datetime-button>
-          </ion-item>
-        </div>
+      <!-- Category Selector -->
+      <ion-item>
+        <ion-label position="stacked">Category</ion-label>
+        <ion-select
+          v-model="selectedCategory"
+          placeholder="Select category (optional)"
+          interface="action-sheet"
+        >
+          <ion-select-option
+            v-for="category in categories"
+            :key="category.id"
+            :value="category.id"
+          >
+            {{ category.icon }} {{ category.name }}
+          </ion-select-option>
+          <ion-select-option value="custom">
+            ➕ Add new category
+          </ion-select-option>
+        </ion-select>
+      </ion-item>
 
-        <!-- Category Selector -->
-        <div class="category-section">
-          <ion-item>
-            <ion-label position="stacked">Category</ion-label>
-            <ion-select
-              v-model="selectedCategory"
-              placeholder="Select category (optional)"
-              interface="action-sheet"
-            >
-              <ion-select-option
-                v-for="category in categories"
-                :key="category.id"
-                :value="category.id"
-              >
-                {{ category.icon }} {{ category.name }}
-              </ion-select-option>
-              <ion-select-option value="custom">
-                ➕ Add new category
-              </ion-select-option>
-            </ion-select>
-          </ion-item>
-        </div>
+      <!-- Custom Category Input (shown when "Add new category" is selected) -->
+      <ion-item v-if="selectedCategory === 'custom'">
+        <ion-label position="stacked">New Category Name</ion-label>
+        <ion-input
+          v-model="customCategory"
+          placeholder="Enter category name"
+        />
+      </ion-item>
 
-        <!-- Custom Category Input (shown when "Add new category" is selected) -->
-        <div v-if="selectedCategory === 'custom'" class="custom-category-section">
-          <ion-item>
-            <ion-label position="stacked">New Category Name</ion-label>
-            <ion-input
-              v-model="customCategory"
-              placeholder="Enter category name"
-            />
-          </ion-item>
-        </div>
-      </div>
-
-      <div class="dialog-actions">
+      <!-- Action Buttons -->
+      <div class="ion-padding" style="text-align: right;">
         <ion-button fill="clear" color="medium" @click="closeDialog">
           Cancel
         </ion-button>
         <ion-button 
           fill="solid" 
           color="primary" 
+          shape="round"
           @click="saveSpending"
           :disabled="!isValid"
           strong
@@ -82,11 +78,11 @@
           Save
         </ion-button>
       </div>
-    </div>
+    </ion-content>
 
   </ion-modal>
 
-  <ion-modal>
+  <ion-modal keep-contents-mounted="true">
     <ion-datetime 
       id="spending-date"
       v-model="selectedDate"
@@ -103,6 +99,11 @@
 import { ref, computed, watch, nextTick, onMounted } from 'vue'
 import { 
   IonModal, 
+  IonHeader,
+  IonToolbar,
+  IonTitle,
+  IonContent,
+  IonButtons,
   IonButton, 
   IonIcon, 
   IonInput, 
@@ -134,12 +135,17 @@ const emit = defineEmits<{
 const { currencySymbol } = useCurrency()
 const { categories, loadCategories, addCategory } = useCategoryStore()
 
+// Helper function to get local datetime string
+const getLocalDatetimeString = () => {
+  return new Date().toISOString()
+}
+
 // Reactive data
 const amount = ref('')
 const selectedCategory = ref('')
 const customCategory = ref('')
 const amountInput = ref()
-const selectedDate = ref(new Date().toISOString())
+const selectedDate = ref(getLocalDatetimeString())
 
 // Computed
 const maxDate = computed(() => {
@@ -200,13 +206,14 @@ const saveSpending = async () => {
     selectedCategory.value = categoryId || ''
   }
   customCategory.value = ''
+  selectedDate.value = getLocalDatetimeString()
 }
 
 const resetForm = () => {
   amount.value = ''
   selectedCategory.value = ''
   customCategory.value = ''
-  selectedDate.value = new Date().toISOString()
+  selectedDate.value = getLocalDatetimeString()
 }
 
 // Load categories on component mount
@@ -224,60 +231,3 @@ watch(() => props.isOpen, (isOpen) => {
 })
 </script>
 
-<style scoped>
-.spending-dialog {
-  padding: 1.5rem;
-  min-height: 400px;
-  display: flex;
-  flex-direction: column;
-}
-
-.dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.dialog-header h2 {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--ion-color-primary);
-}
-
-.dialog-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-
-.amount-section,
-.date-section,
-.category-section,
-.custom-category-section {
-  margin-bottom: 1rem;
-}
-
-.amount-section ion-item,
-.date-section ion-item,
-.category-section ion-item,
-.custom-category-section ion-item {
-  --border-radius: 12px;
-  --background: var(--ion-color-light);
-  margin-bottom: 0.5rem;
-}
-
-.dialog-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-}
-
-.dialog-actions ion-button {
-  min-width: 100px;
-}
-</style>
