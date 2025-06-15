@@ -37,6 +37,7 @@
               minute: '2-digit',
             },
           }"
+          :show-default-buttons="true"
           @ion-change="onDateChange"
         >
           <div slot="title">Select Date & Time</div>
