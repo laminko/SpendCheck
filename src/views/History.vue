@@ -90,12 +90,11 @@ import { receiptOutline, trashOutline } from 'ionicons/icons'
 import { useCurrency } from '@/composables/useCurrency'
 import { useSpendingStore } from '@/composables/useSpendingStore'
 import { useDateUtils } from '@/composables/useDateUtils'
-import moment from 'moment-timezone'
 
 const { formatAmount } = useCurrency()
 const route = useRoute()
 const { entries, loadEntries, deleteEntry } = useSpendingStore()
-const { getDaysAgo, toLocalDateString, formatRelativeDate } = useDateUtils()
+const { getDaysAgo, toLocalDateString, formatRelativeDate, formatDateTime } = useDateUtils()
 
 // Filter entries to show only last 7 days
 const filteredEntries = computed(() => {
@@ -145,9 +144,7 @@ const formatDateDivider = (dateString: string) => {
 }
 
 const formatEntryTime = (timestamp: string) => {
-  // Convert UTC timestamp to user's local timezone
-  const userTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  return moment.tz(timestamp, userTimezone).format('YYYY-MM-DD h:mm A')
+  return formatDateTime(timestamp)
 }
 
 
