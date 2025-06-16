@@ -28,6 +28,7 @@
 import { computed } from 'vue'
 import { IonIcon } from '@ionic/vue'
 import { barChartOutline } from 'ionicons/icons'
+import { format } from 'date-fns'
 import { useCurrency } from '@/composables/useCurrency'
 import { useDateUtils } from '@/composables/useDateUtils'
 import {
@@ -48,7 +49,7 @@ ChartJS.register(
 )
 
 interface Props {
-  entries: Array<{ date: string, amount: number, currency: string, category?: string, category_id?: string }>
+  entries: Array<{ id?: string, date: string, amount: number, currency: string, category?: string, category_id?: string }>
 }
 
 const props = defineProps<Props>()
@@ -73,7 +74,7 @@ const currentMonthChartData = computed(() => {
   
   for (let day = 1; day <= daysInMonth; day++) {
     labels.push(day.toString())
-    const dateStr = new Date(now.getFullYear(), now.getMonth(), day).toISOString().split('T')[0]
+    const dateStr = format(new Date(now.getFullYear(), now.getMonth(), day), 'yyyy-MM-dd')
     const dayEntries = props.entries.filter(entry => {
       // Convert UTC date from backend to local timezone and format as YYYY-MM-DD
       const entryLocalDate = toLocalDateString(entry.date)
@@ -106,8 +107,8 @@ const currentMonthChartData = computed(() => {
 // Peak day calculation
 const peakDay = computed(() => {
   const now = new Date()
-  const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0]
-  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString().split('T')[0]
+  const firstDay = format(new Date(now.getFullYear(), now.getMonth(), 1), 'yyyy-MM-dd')
+  const lastDay = format(new Date(now.getFullYear(), now.getMonth() + 1, 0), 'yyyy-MM-dd')
   
   // Filter entries for current month
   const currentMonthEntries = props.entries.filter(entry => {
