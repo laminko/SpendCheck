@@ -51,6 +51,7 @@
           ref="amountInput"
           v-model="amount"
           type="number"
+          inputmode="decimal"
           placeholder="0.00"
           step="0.01"
           min="0"
