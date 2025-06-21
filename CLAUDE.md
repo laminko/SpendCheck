@@ -18,6 +18,7 @@ This file contains the project-specific configuration for Claude Code.
 **IMPORTANT BRANCH STRUCTURE:**
 - **dev** = Main development/working branch (use for all development work)
 - **main** = Production/release branch ONLY (no direct development)
+- **Each feature or issue should be branched from dev, then PR back to dev**
 
 ## Issue/Feature Handling Workflow
 
@@ -85,6 +86,38 @@ For production releases:
 - `npm run build` - Production build with TypeScript check
 - `npm run typecheck` - TypeScript validation only
 - Mobile: `npm run build:mobile` + Capacitor commands
+
+## Outstanding Implementation Work
+
+**Settings Page (Issue #37) - Remaining Tasks:**
+
+**Authentication System (Major Work Needed):**
+- OAuth Integration - All auth methods are TODO stubs in Settings.vue:
+  - Google OAuth (`signInWithGoogle` - line 197)
+  - Facebook OAuth (`signInWithFacebook` - line 203)
+  - Phone SMS verification (`signInWithPhone` - line 209)
+- Real Authentication State - Currently hardcoded as guest:
+  - `isRealUser` always returns `false` (line 176)
+  - Need to update `useAuth.ts` composable for real authentication
+
+**Category Management (Complete Feature Missing):**
+- Category Management Page/Modal - Only placeholder (`manageCategoriesDisabled` - line 215)
+  - Create new categories
+  - Edit existing categories
+  - Delete categories
+  - Category validation
+
+**Backend Integration (Database Work):**
+- User Preferences Storage - Currency saving not implemented for authenticated users
+- Database Schema Updates - For user preferences and custom categories
+- Row Level Security (RLS) - For authenticated user data
+
+**Additional Features:**
+- Data Migration - Plan for moving guest data to authenticated accounts
+- Error Handling - Robust error handling for auth failures
+- Loading States - UI feedback during authentication
+
+**Current Status:** UI/UX framework is complete with proper guest mode messaging and structure. Main work needed is implementing actual authentication backends and category management functionality.
 
 ## Important Instruction Reminders
 
