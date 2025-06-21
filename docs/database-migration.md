@@ -13,20 +13,17 @@ Your production database contains:
 
 ### Option 1: Manual SQL Migration (Recommended)
 
-#### Step 1: Set up Environment Files
+#### Step 1: Environment Configuration
 
-Environment files have been created:
+Vite automatically loads environment files based on mode:
+- **Development mode** (`npm run dev`) → Uses `.env.development`
+- **Production mode** (`npm run build`) → Uses `.env.production`
+
+Your environment files are already configured:
 - `.env.development` - Development database credentials
 - `.env.production` - Production database credentials
 
-**Configure your credentials:**
-```bash
-# Edit .env.development with your dev database info
-VITE_SUPABASE_URL=your_development_supabase_url
-VITE_SUPABASE_ANON_KEY=your_development_supabase_anon_key
-
-# Update your main .env file with development credentials for testing
-```
+**No additional setup needed** - Vite handles environment switching automatically!
 
 #### Step 2: Create Development Database Schema
 
@@ -135,9 +132,10 @@ Complete database schema with:
 - Default categories for testing
 
 ### Environment Files
-- `.env.development` - Development database configuration
-- `.env.production` - Production database configuration
+- `.env.development` - Development database configuration (auto-loaded by `npm run dev`)
+- `.env.production` - Production database configuration (auto-loaded by `npm run build`)
 - `.env.example` - Template for new setups
+- **Note**: `.env` file not needed - Vite handles mode-based environment loading automatically
 
 ## Verification Steps
 
@@ -158,14 +156,11 @@ SELECT * FROM spending_entries WHERE user_id = 'test-user-id';
 
 ## Development Workflow
 
-1. **Use development database** for all feature development
-2. **Test migrations** safely without affecting production
-3. **Switch environments** by updating your main `.env` file:
-   ```bash
-   # For development: Use credentials from .env.development
-   # For production: Use credentials from .env.production
-   # Simply edit .env directly or reference the environment-specific files
-   ```
+1. **Development**: Run `npm run dev` → Automatically uses `.env.development`
+2. **Production**: Run `npm run build` → Automatically uses `.env.production`
+3. **Testing**: Vite handles environment switching automatically based on command
+
+**No manual environment switching needed** - Vite's built-in mode handling takes care of everything!
 
 ## Next Steps
 
