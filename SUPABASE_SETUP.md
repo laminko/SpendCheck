@@ -74,32 +74,32 @@ ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 
 -- Create policy to allow users to see only their own data
 CREATE POLICY "Users can view own spending entries" ON public.spending_entries
-    FOR SELECT USING (user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+    FOR SELECT USING (user_id = (select current_setting('request.jwt.claims', true)::json->>'sub'));
 
 -- Create policy to allow users to insert their own data
 CREATE POLICY "Users can insert own spending entries" ON public.spending_entries
-    FOR INSERT WITH CHECK (user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+    FOR INSERT WITH CHECK (user_id = (select current_setting('request.jwt.claims', true)::json->>'sub'));
 
 -- Create policy to allow users to update their own data
 CREATE POLICY "Users can update own spending entries" ON public.spending_entries
-    FOR UPDATE USING (user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+    FOR UPDATE USING (user_id = (select current_setting('request.jwt.claims', true)::json->>'sub'));
 
 -- Create policy to allow users to delete their own data
 CREATE POLICY "Users can delete own spending entries" ON public.spending_entries
-    FOR DELETE USING (user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+    FOR DELETE USING (user_id = (select current_setting('request.jwt.claims', true)::json->>'sub'));
 
 -- Create policies for categories table
 CREATE POLICY "Users can view own categories" ON public.categories
-    FOR SELECT USING (user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+    FOR SELECT USING (user_id = (select current_setting('request.jwt.claims', true)::json->>'sub'));
 
 CREATE POLICY "Users can insert own categories" ON public.categories
-    FOR INSERT WITH CHECK (user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+    FOR INSERT WITH CHECK (user_id = (select current_setting('request.jwt.claims', true)::json->>'sub'));
 
 CREATE POLICY "Users can update own categories" ON public.categories
-    FOR UPDATE USING (user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+    FOR UPDATE USING (user_id = (select current_setting('request.jwt.claims', true)::json->>'sub'));
 
 CREATE POLICY "Users can delete own categories" ON public.categories
-    FOR DELETE USING (user_id = current_setting('request.jwt.claims', true)::json->>'sub');
+    FOR DELETE USING (user_id = (select current_setting('request.jwt.claims', true)::json->>'sub'));
 ```
 
 4. Click "Run"
