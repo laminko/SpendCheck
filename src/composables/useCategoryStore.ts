@@ -54,6 +54,7 @@ export function useCategoryStore() {
     }
   }
 
+
   // Seed default categories for new users
   const seedDefaultCategories = async (currentUserId: string) => {
     try {
