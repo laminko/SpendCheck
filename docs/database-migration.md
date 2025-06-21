@@ -25,8 +25,7 @@ Environment files have been created:
 VITE_SUPABASE_URL=your_development_supabase_url
 VITE_SUPABASE_ANON_KEY=your_development_supabase_anon_key
 
-# For development work, copy dev config:
-cp .env.development .env
+# Update your main .env file with development credentials for testing
 ```
 
 #### Step 2: Create Development Database Schema
@@ -161,13 +160,11 @@ SELECT * FROM spending_entries WHERE user_id = 'test-user-id';
 
 1. **Use development database** for all feature development
 2. **Test migrations** safely without affecting production
-3. **Switch environments** using environment files:
+3. **Switch environments** by updating your main `.env` file:
    ```bash
-   # Development
-   cp .env.development .env
-   
-   # Production  
-   cp .env.production .env
+   # For development: Use credentials from .env.development
+   # For production: Use credentials from .env.production
+   # Simply edit .env directly or reference the environment-specific files
    ```
 
 ## Next Steps
