@@ -32,8 +32,8 @@
           <ion-item v-else>
             <ion-icon :icon="personCircleOutline" slot="start"></ion-icon>
             <ion-label>
-              <h3>{{ userProfile?.display_name || 'Authenticated User' }}</h3>
-              <p>{{ userProfile?.email || 'Anonymous' }}</p>
+              <h3>{{ userProfile?.email || userProfile?.user_metadata?.full_name || 'Authenticated User' }}</h3>
+              <p>{{ userProfile?.email || 'Signed in' }}</p>
             </ion-label>
             <ion-button fill="clear" color="danger" slot="end" @click="handleSignOut">
               <ion-icon :icon="logOutOutline" slot="start"></ion-icon>
@@ -97,13 +97,67 @@
         </ion-list>
 
       <!-- Authentication Modal -->
-      <ion-modal :is-open="showAuthModal" @did-dismiss="showAuthModal = false">
+      <ion-modal :is-open="showAuthModal" @did-dismiss="resetAuthModal">
         <div class="auth-modal">
           <div class="auth-modal-content">
-            <h2>Sign In</h2>
-            <p>Choose how you'd like to sign in</p>
+            <h2 v-if="!showEmailForm">Sign In</h2>
+            <h2 v-else>{{ isSignUp ? 'Create Account' : 'Sign In' }}</h2>
+            <p v-if="!showEmailForm">Choose how you'd like to sign in</p>
 
-            <div class="auth-buttons">
+            <!-- Email/Password Form -->
+            <div v-if="showEmailForm" class="email-form">
+              <ion-item>
+                <ion-input 
+                  v-model="email" 
+                  type="email" 
+                  placeholder="Email" 
+                  fill="outline"
+                  required
+                ></ion-input>
+              </ion-item>
+              
+              <ion-item>
+                <ion-input 
+                  v-model="password" 
+                  type="password" 
+                  placeholder="Password" 
+                  fill="outline"
+                  required
+                ></ion-input>
+              </ion-item>
+
+              <ion-button 
+                expand="block" 
+                @click="handleEmailAuth"
+                :disabled="!email || !password"
+              >
+                {{ isSignUp ? 'Create Account' : 'Sign In' }}
+              </ion-button>
+
+              <ion-button 
+                expand="block" 
+                fill="clear" 
+                @click="isSignUp = !isSignUp"
+              >
+                {{ isSignUp ? 'Already have an account? Sign in' : 'Need an account? Sign up' }}
+              </ion-button>
+
+              <ion-button 
+                expand="block" 
+                fill="clear" 
+                @click="showEmailForm = false"
+              >
+                Back
+              </ion-button>
+            </div>
+
+            <!-- OAuth Buttons -->
+            <div v-else class="auth-buttons">
+              <ion-button expand="block" fill="outline" @click="showEmailForm = true">
+                <ion-icon :icon="mailOutline" slot="start" style="font-size: 24px; margin-right: 8px;"></ion-icon>
+                Continue with Email
+              </ion-button>
+
               <ion-button expand="block" fill="outline" @click="signInWithGoogle">
                 <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google" slot="start" style="width: 24px; height: 24px; margin-right: 8px;" />
                 Continue with Google
@@ -114,15 +168,10 @@
                 Continue with Facebook
               </ion-button>
 
-              <ion-button expand="block" fill="outline" @click="signInWithPhone">
-                <ion-icon :icon="callOutline" slot="start" style="font-size: 24px; margin-right: 8px;"></ion-icon>
-                Continue with Phone
+              <ion-button expand="block" fill="clear" @click="resetAuthModal">
+                Cancel
               </ion-button>
             </div>
-
-            <ion-button expand="block" fill="clear" @click="showAuthModal = false">
-              Cancel
-            </ion-button>
           </div>
         </div>
       </ion-modal>
@@ -147,6 +196,7 @@ import {
   IonModal,
   IonList,
   IonListHeader,
+  IonInput,
   toastController
 } from '@ionic/vue'
 import {
@@ -158,58 +208,94 @@ import {
   folderOutline,
   informationCircleOutline,
   logoFacebook,
-  callOutline
+  mailOutline
 } from 'ionicons/icons'
 
 import { useAuth } from '@/composables/useAuth'
 import { useCurrency } from '@/composables/useCurrency'
 import CurrencyPicker from '@/components/CurrencyPicker.vue'
 
-const { signOut } = useAuth()
+const { user, isRealUser, signOut, signInWithOAuth, signInWithEmail, signUpWithEmail } = useAuth()
 const { currentCurrency, loadSavedCurrency } = useCurrency()
 
 const showAuthModal = ref(false)
-const userProfile = ref<any>(null)
+const showEmailForm = ref(false)
+const isSignUp = ref(false)
+const email = ref('')
+const password = ref('')
+const userProfile = computed(() => user.value)
 
-// For now, treat all users as guests since we only have anonymous auth
-// This will be updated when we add real authentication
-const isRealUser = computed(() => false)
+const showSuccessToast = async (message: string) => {
+  const toast = await toastController.create({
+    message,
+    duration: 2000,
+    color: 'success'
+  })
+  await toast.present()
+}
+
+const showErrorToast = async (message: string) => {
+  const toast = await toastController.create({
+    message,
+    duration: 2000,
+    color: 'danger'
+  })
+  await toast.present()
+}
 
 const handleSignOut = async () => {
   try {
     await signOut()
-    const toast = await toastController.create({
-      message: 'Signed out successfully',
-      duration: 2000,
-      color: 'success'
-    })
-    await toast.present()
+    await showSuccessToast('Signed out successfully')
   } catch (error) {
-    const toast = await toastController.create({
-      message: 'Error signing out',
-      duration: 2000,
-      color: 'danger'
-    })
-    await toast.present()
+    await showErrorToast('Failed to sign out')
   }
 }
 
-const signInWithGoogle = () => {
-  // TODO: Implement Google OAuth
-  console.log('Sign in with Google')
-  showAuthModal.value = false
+const signInWithGoogle = async () => {
+  try {
+    await signInWithOAuth('google')
+    resetAuthModal()
+    await showSuccessToast('Redirecting to Google...')
+  } catch (error) {
+    await showErrorToast('Failed to sign in with Google')
+  }
 }
 
-const signInWithFacebook = () => {
-  // TODO: Implement Facebook OAuth
-  console.log('Sign in with Facebook')
-  showAuthModal.value = false
+const signInWithFacebook = async () => {
+  try {
+    await signInWithOAuth('facebook')
+    resetAuthModal()
+    await showSuccessToast('Redirecting to Facebook...')
+  } catch (error) {
+    await showErrorToast('Failed to sign in with Facebook')
+  }
 }
 
-const signInWithPhone = () => {
-  // TODO: Implement Phone authentication
-  console.log('Sign in with Phone')
+const handleEmailAuth = async () => {
+  try {
+    if (isSignUp.value) {
+      await signUpWithEmail(email.value, password.value)
+      await showSuccessToast('Account created successfully! Please check your email for verification.')
+    } else {
+      await signInWithEmail(email.value, password.value)
+      await showSuccessToast('Signed in successfully!')
+    }
+    
+    resetAuthModal()
+  } catch (error) {
+    const message = isSignUp.value ? 'Failed to create account' : 'Failed to sign in'
+    await showErrorToast(message)
+  }
+}
+
+
+const resetAuthModal = () => {
   showAuthModal.value = false
+  showEmailForm.value = false  
+  isSignUp.value = false
+  email.value = ''
+  password.value = ''
 }
 
 const manageCategoriesDisabled = () => {
