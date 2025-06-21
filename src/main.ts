@@ -6,6 +6,7 @@ import Tabs from './views/Tabs.vue'
 import Home from './views/Home.vue'
 import History from './views/History.vue'
 import Graph from './views/Graph.vue'
+import Settings from './views/Settings.vue'
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/vue/css/core.css'
@@ -47,6 +48,10 @@ const routes = [
       {
         path: 'graph',
         component: Graph
+      },
+      {
+        path: 'settings',
+        component: Settings
       }
     ]
   }

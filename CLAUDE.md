@@ -18,6 +18,7 @@ This file contains the project-specific configuration for Claude Code.
 **IMPORTANT BRANCH STRUCTURE:**
 - **dev** = Main development/working branch (use for all development work)
 - **main** = Production/release branch ONLY (no direct development)
+- **Each feature or issue should be branched from dev, then PR back to dev**
 
 ## Issue/Feature Handling Workflow
 
@@ -48,16 +49,16 @@ For production releases:
 - Mobile-ready with Capacitor for iOS/Android
 
 **Current Branch Status:**
-- Working on `dev` branch (main development branch)
-- Latest commit: `bb74916` - Fixed missing imports in History.vue
-- Clean working directory, all changes committed and pushed
+- Working on `feature/settings-page-auth` branch (authentication implementation)
+- Latest commit: `daf10b1` - Enhanced email/password authentication with Apple design system
+- Working directory has modified environment files (.env.development, .env.production)
 
 **Recent Key Issues Resolved:**
-1. **History.vue Import Issues** - Fixed missing `useSpendingStore` and `useDateUtils` imports
-2. **Toast Implementation** - Verified proper Ionic color usage (`success`, `danger`)
-3. **TypeScript Warnings** - Removed unused `formatTimeAgo` variable
-4. **DateTime Format** - Recently improved History page timestamp display
-5. **Daily Spending Popover** - Recently added to GitHub-style grid
+1. **Authentication System** - Implemented complete Supabase authentication (email/password, OAuth)
+2. **Apple Design System** - Enhanced authentication UI with Apple-style components
+3. **Settings Page** - Complete refactor with proper Ionic components
+4. **Currency Picker** - Replaced custom modal with existing CurrencyPicker component
+5. **History.vue Import Issues** - Fixed missing `useSpendingStore` and `useDateUtils` imports
 
 **Technical Architecture:**
 - **Frontend:** Vue 3 Composition API + TypeScript + Ionic Vue
@@ -86,9 +87,39 @@ For production releases:
 - `npm run typecheck` - TypeScript validation only
 - Mobile: `npm run build:mobile` + Capacitor commands
 
+## Outstanding Implementation Work
+
+**Settings Page Authentication (Issue #37) - COMPLETED:**
+
+**Authentication System (IMPLEMENTED):**
+- ✅ Complete Supabase authentication system implemented
+- ✅ Email/password authentication with proper validation
+- ✅ Google OAuth integration (`signInWithGoogle`)
+- ✅ Facebook OAuth integration (`signInWithFacebook`) 
+- ✅ Apple OAuth integration (`signInWithApple`)
+- ✅ Real authentication state management in `useAuth.ts`
+- ✅ Enhanced UI with Apple design system components
+- ✅ Proper error handling and loading states
+
+**Remaining Tasks:**
+- Phone SMS verification (`signInWithPhone`) - Supabase setup required
+- Category Management System:
+  - Create new categories
+  - Edit existing categories  
+  - Delete categories
+  - Category validation
+- User Preferences Storage - Currency saving for authenticated users
+- Data Migration - Moving guest data to authenticated accounts
+
+**Current Status:** Core authentication system is fully implemented with modern UI. Phone verification and category management remain as next implementation targets.
+
 ## Important Instruction Reminders
 
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.
 ALWAYS prefer editing an existing file to creating a new one.
 NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+
+## Development Resources
+
+- Use ionic components and its docs is https://ionicframework.com/docs/components
