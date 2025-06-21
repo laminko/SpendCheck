@@ -13,6 +13,12 @@ This file contains the project-specific configuration for Claude Code.
 - **Fix TypeScript warnings**: Remove unused variables (e.g., diffDays error in History.vue)  
 - **Verify clean build output**: Ensure no TS errors or build failures before push
 
+## Branch Workflow
+
+**IMPORTANT BRANCH STRUCTURE:**
+- **dev** = Main development/working branch (use for all development work)
+- **main** = Production/release branch ONLY (no direct development)
+
 ## Issue/Feature Handling Workflow
 
 When a human reports a bug or requests a feature, follow this workflow:
@@ -24,6 +30,14 @@ When a human reports a bug or requests a feature, follow this workflow:
 6. **Work on the fix/feature** until the issue is resolved
 7. **After issue is resolved**, switch back to dev branch and fetch updates
 8. **Wait for human's approval** before closing the GitHub issue
+
+## Release Workflow
+
+For production releases:
+1. **Bump version** in package.json on dev branch
+2. **Create PR from dev to main** when ready for release
+3. **Create GitHub release** with release notes after PR is merged
+4. **Merge main back to dev** to keep branches synchronized
 
 ## Current Project Status
 
