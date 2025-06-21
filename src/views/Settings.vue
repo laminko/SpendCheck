@@ -48,12 +48,13 @@
             <ion-label>Currency</ion-label>
           </ion-list-header>
 
-          <ion-item button @click="showCurrencyModal = true">
+          <ion-item>
             <ion-icon :icon="cardOutline" slot="start"></ion-icon>
             <ion-label>
               <h3>Preferred Currency</h3>
               <p>{{ currentCurrency.name }} ({{ currentCurrency.symbol }})</p>
             </ion-label>
+            <CurrencyPicker slot="end" />
           </ion-item>
 
           <ion-note v-if="!isRealUser" class="guest-note">
@@ -126,39 +127,6 @@
         </div>
       </ion-modal>
 
-      <!-- Currency Selection Modal -->
-      <ion-modal :is-open="showCurrencyModal" @did-dismiss="showCurrencyModal = false">
-        <div class="currency-modal">
-          <div class="currency-modal-content">
-            <h2>Select Currency</h2>
-            <ion-list>
-              <ion-item
-                v-for="currency in currencies"
-                :key="currency.code"
-                button
-                @click="selectCurrency(currency)"
-              >
-                <ion-label>
-                  <h3>{{ currency.name }}</h3>
-                  <p>{{ currency.symbol }} ({{ currency.code }})</p>
-                </ion-label>
-                <ion-icon
-                  v-if="currentCurrency.code === currency.code"
-                  :icon="checkmarkOutline"
-                  slot="end"
-                  color="primary"
-                ></ion-icon>
-              </ion-item>
-            </ion-list>
-
-            <div class="modal-buttons">
-              <ion-button expand="block" fill="clear" @click="showCurrencyModal = false">
-                Done
-              </ion-button>
-            </div>
-          </div>
-        </div>
-      </ion-modal>
     </ion-content>
   </ion-page>
 </template>
@@ -190,18 +158,17 @@ import {
   folderOutline,
   informationCircleOutline,
   logoFacebook,
-  callOutline,
-  checkmarkOutline
+  callOutline
 } from 'ionicons/icons'
 
 import { useAuth } from '@/composables/useAuth'
 import { useCurrency } from '@/composables/useCurrency'
+import CurrencyPicker from '@/components/CurrencyPicker.vue'
 
 const { signOut } = useAuth()
-const { currencies, currentCurrency, setCurrency, loadSavedCurrency } = useCurrency()
+const { currentCurrency, loadSavedCurrency } = useCurrency()
 
 const showAuthModal = ref(false)
-const showCurrencyModal = ref(false)
 const userProfile = ref<any>(null)
 
 // For now, treat all users as guests since we only have anonymous auth
@@ -243,19 +210,6 @@ const signInWithPhone = () => {
   // TODO: Implement Phone authentication
   console.log('Sign in with Phone')
   showAuthModal.value = false
-}
-
-const selectCurrency = async (currency: any) => {
-  setCurrency(currency) // Pass the full currency object, not just the code
-
-  const toast = await toastController.create({
-    message: `Currency updated to ${currency.name}`,
-    duration: 2000,
-    color: 'success'
-  })
-  await toast.present()
-
-  showCurrencyModal.value = false
 }
 
 const manageCategoriesDisabled = () => {
@@ -300,7 +254,7 @@ onMounted(async () => {
 }
 
 .auth-modal,
-.currency-modal {
+.auth-modal {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -308,8 +262,7 @@ onMounted(async () => {
   padding: 16px;
 }
 
-.auth-modal-content,
-.currency-modal-content {
+.auth-modal-content {
   background: var(--ion-color-light);
   border-radius: 16px;
   padding: 24px;
@@ -319,8 +272,7 @@ onMounted(async () => {
   overflow-y: auto;
 }
 
-.auth-modal-content h2,
-.currency-modal-content h2 {
+.auth-modal-content h2 {
   text-align: center;
   margin: 0 0 8px 0;
   font-weight: 600;
