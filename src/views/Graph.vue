@@ -2,7 +2,7 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>Analytics</ion-title>
+        <ion-title>Stats</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -49,7 +49,7 @@ const { getThisMonthFirstDay, getThisMonthLastDay, getLastMonthFirstDay, getLast
 const currentMonthTotal = computed(() => {
   const firstDay = getThisMonthFirstDay()
   const lastDay = getThisMonthLastDay()
-  
+
   return entries.value
     .filter(entry => {
       const entryDate = toLocalDateString(entry.date)
@@ -62,7 +62,7 @@ const currentMonthTotal = computed(() => {
 const lastMonthTotal = computed(() => {
   const firstDay = getLastMonthFirstDay()
   const lastDay = getLastMonthLastDay()
-  
+
   return entries.value
     .filter(entry => {
       const entryDate = toLocalDateString(entry.date)
@@ -76,7 +76,7 @@ const monthlyChangePercentage = computed(() => {
   if (lastMonthTotal.value === 0) {
     return currentMonthTotal.value > 0 ? 100 : null
   }
-  
+
   const change = ((currentMonthTotal.value - lastMonthTotal.value) / lastMonthTotal.value) * 100
   return Math.round(change)
 })

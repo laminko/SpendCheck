@@ -7,83 +7,85 @@
     </ion-header>
 
     <ion-content :fullscreen="true">
-      <ion-header collapse="condense">
-        <ion-toolbar>
-          <ion-title size="large">Settings</ion-title>
-        </ion-toolbar>
-      </ion-header>
-
-      <div class="container">
         <!-- Authentication Section -->
-        <div class="section">
-          <h2>Account</h2>
+        <ion-list class="ion-margin-bottom" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+          <ion-list-header>
+            <ion-label>Account</ion-label>
+          </ion-list-header>
+
           <div v-if="!isRealUser" class="auth-section">
             <p class="auth-description">
               Sign in to save your preferences and access advanced features
             </p>
-            
+
             <ion-button expand="block" fill="outline" @click="showAuthModal = true">
               <ion-icon :icon="personOutline" slot="start"></ion-icon>
               Sign In
             </ion-button>
-            
-            <ion-button expand="block" fill="clear" color="medium" @click="continueAsGuest">
-              <ion-icon :icon="eyeOffOutline" slot="start"></ion-icon>
-              Continue as Guest
-            </ion-button>
+
+            <p class="ion-text-center ion-margin-top" style="color: var(--ion-color-medium); font-size: 14px;">
+              <ion-icon :icon="eyeOffOutline" style="margin-right: 8px;"></ion-icon>
+              You're currently using SpendCheck as a guest
+            </p>
           </div>
 
-          <div v-else class="user-section">
-            <div class="user-info">
-              <ion-icon :icon="personCircleOutline" class="user-avatar"></ion-icon>
-              <div class="user-details">
-                <h3>{{ userProfile?.display_name || 'Authenticated User' }}</h3>
-                <p>{{ userProfile?.email || 'Anonymous' }}</p>
-              </div>
-            </div>
-            
-            <ion-button fill="clear" color="danger" @click="handleSignOut">
+          <ion-item v-else>
+            <ion-icon :icon="personCircleOutline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>{{ userProfile?.display_name || 'Authenticated User' }}</h3>
+              <p>{{ userProfile?.email || 'Anonymous' }}</p>
+            </ion-label>
+            <ion-button fill="clear" color="danger" slot="end" @click="handleSignOut">
               <ion-icon :icon="logOutOutline" slot="start"></ion-icon>
               Sign Out
             </ion-button>
-          </div>
-        </div>
+          </ion-item>
+        </ion-list>
 
         <!-- Currency Section -->
-        <div class="section">
-          <h2>Currency</h2>
+        <ion-list class="ion-margin-bottom" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+          <ion-list-header>
+            <ion-label>Currency</ion-label>
+          </ion-list-header>
+
           <ion-item button @click="showCurrencyModal = true">
             <ion-icon :icon="cardOutline" slot="start"></ion-icon>
             <ion-label>
               <h3>Preferred Currency</h3>
               <p>{{ currentCurrency.name }} ({{ currentCurrency.symbol }})</p>
             </ion-label>
-            <ion-icon :icon="chevronForwardOutline" slot="end"></ion-icon>
           </ion-item>
+
           <ion-note v-if="!isRealUser" class="guest-note">
             Sign in to save currency preference
           </ion-note>
-        </div>
+        </ion-list>
 
         <!-- Categories Section -->
-        <div class="section">
-          <h2>Categories</h2>
+        <ion-list class="ion-margin-bottom" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+          <ion-list-header>
+            <ion-label>Categories</ion-label>
+          </ion-list-header>
+
           <ion-item button @click="manageCategoriesDisabled" :disabled="!isRealUser">
             <ion-icon :icon="folderOutline" slot="start"></ion-icon>
             <ion-label>
               <h3>Manage Categories</h3>
               <p>Create and customize spending categories</p>
             </ion-label>
-            <ion-icon :icon="chevronForwardOutline" slot="end"></ion-icon>
           </ion-item>
+
           <ion-note v-if="!isRealUser" class="guest-note">
             Sign in to manage custom categories
           </ion-note>
-        </div>
+        </ion-list>
 
         <!-- App Info Section -->
-        <div class="section">
-          <h2>About</h2>
+        <ion-list class="ion-margin-bottom" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+          <ion-list-header>
+            <ion-label>About</ion-label>
+          </ion-list-header>
+
           <ion-item>
             <ion-icon :icon="informationCircleOutline" slot="start"></ion-icon>
             <ion-label>
@@ -91,8 +93,7 @@
               <p>Version 1.2.0</p>
             </ion-label>
           </ion-item>
-        </div>
-      </div>
+        </ion-list>
 
       <!-- Authentication Modal -->
       <ion-modal :is-open="showAuthModal" @did-dismiss="showAuthModal = false">
@@ -100,24 +101,24 @@
           <div class="auth-modal-content">
             <h2>Sign In</h2>
             <p>Choose how you'd like to sign in</p>
-            
+
             <div class="auth-buttons">
               <ion-button expand="block" fill="outline" @click="signInWithGoogle">
-                <ion-icon :icon="logoGoogle" slot="start"></ion-icon>
+                <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google" slot="start" style="width: 24px; height: 24px; margin-right: 8px;" />
                 Continue with Google
               </ion-button>
-              
+
               <ion-button expand="block" fill="outline" @click="signInWithFacebook">
-                <ion-icon :icon="logoFacebook" slot="start"></ion-icon>
+                <ion-icon :icon="logoFacebook" slot="start" style="font-size: 24px; margin-right: 8px;"></ion-icon>
                 Continue with Facebook
               </ion-button>
-              
+
               <ion-button expand="block" fill="outline" @click="signInWithPhone">
-                <ion-icon :icon="callOutline" slot="start"></ion-icon>
+                <ion-icon :icon="callOutline" slot="start" style="font-size: 24px; margin-right: 8px;"></ion-icon>
                 Continue with Phone
               </ion-button>
             </div>
-            
+
             <ion-button expand="block" fill="clear" @click="showAuthModal = false">
               Cancel
             </ion-button>
@@ -131,8 +132,8 @@
           <div class="currency-modal-content">
             <h2>Select Currency</h2>
             <ion-list>
-              <ion-item 
-                v-for="currency in currencies" 
+              <ion-item
+                v-for="currency in currencies"
                 :key="currency.code"
                 button
                 @click="selectCurrency(currency)"
@@ -141,15 +142,15 @@
                   <h3>{{ currency.name }}</h3>
                   <p>{{ currency.symbol }} ({{ currency.code }})</p>
                 </ion-label>
-                <ion-icon 
-                  v-if="currentCurrency.code === currency.code" 
-                  :icon="checkmarkOutline" 
-                  slot="end" 
+                <ion-icon
+                  v-if="currentCurrency.code === currency.code"
+                  :icon="checkmarkOutline"
+                  slot="end"
                   color="primary"
                 ></ion-icon>
               </ion-item>
             </ion-list>
-            
+
             <div class="modal-buttons">
               <ion-button expand="block" fill="clear" @click="showCurrencyModal = false">
                 Done
@@ -177,6 +178,7 @@ import {
   IonNote,
   IonModal,
   IonList,
+  IonListHeader,
   toastController
 } from '@ionic/vue'
 import {
@@ -185,10 +187,8 @@ import {
   personCircleOutline,
   logOutOutline,
   cardOutline,
-  chevronForwardOutline,
   folderOutline,
   informationCircleOutline,
-  logoGoogle,
   logoFacebook,
   callOutline,
   checkmarkOutline
@@ -207,10 +207,6 @@ const userProfile = ref<any>(null)
 // For now, treat all users as guests since we only have anonymous auth
 // This will be updated when we add real authentication
 const isRealUser = computed(() => false)
-
-const continueAsGuest = () => {
-  showAuthModal.value = false
-}
 
 const handleSignOut = async () => {
   try {
@@ -251,14 +247,14 @@ const signInWithPhone = () => {
 
 const selectCurrency = async (currency: any) => {
   setCurrency(currency) // Pass the full currency object, not just the code
-  
+
   const toast = await toastController.create({
     message: `Currency updated to ${currency.name}`,
     duration: 2000,
     color: 'success'
   })
   await toast.present()
-  
+
   showCurrencyModal.value = false
 }
 
@@ -275,7 +271,7 @@ onMounted(async () => {
   try {
     const { ensureValidSession } = useAuth()
     await ensureValidSession() // This will create anonymous session if needed
-    
+
     // Load saved currency preference
     loadSavedCurrency()
   } catch (error) {
@@ -285,23 +281,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.container {
-  padding: 16px;
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.section {
-  margin-bottom: 32px;
-}
-
-.section h2 {
-  font-size: 18px;
-  font-weight: 600;
-  margin: 0 0 16px 0;
-  color: var(--ion-color-primary);
-}
-
 .auth-section {
   text-align: center;
   padding: 24px 16px;
@@ -313,39 +292,9 @@ onMounted(async () => {
   line-height: 1.5;
 }
 
-.user-section {
-  padding: 16px;
-  border: 1px solid var(--ion-color-light);
-  border-radius: 12px;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.user-avatar {
-  font-size: 48px;
-  color: var(--ion-color-primary);
-  margin-right: 16px;
-}
-
-.user-details h3 {
-  margin: 0 0 4px 0;
-  font-weight: 600;
-}
-
-.user-details p {
-  margin: 0;
-  color: var(--ion-color-medium);
-  font-size: 14px;
-}
-
 .guest-note {
   display: block;
-  margin-top: 8px;
-  margin-left: 48px;
+  margin: 8px 16px;
   font-size: 12px;
   color: var(--ion-color-medium);
 }
@@ -392,15 +341,5 @@ onMounted(async () => {
 
 .modal-buttons {
   margin-top: 16px;
-}
-
-ion-item {
-  --border-radius: 12px;
-  --background: var(--ion-color-light);
-  margin-bottom: 8px;
-}
-
-ion-item[disabled] {
-  opacity: 0.5;
 }
 </style>
