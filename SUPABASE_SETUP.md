@@ -104,6 +104,27 @@ CREATE POLICY "Users can delete own categories" ON public.categories
 
 4. Click "Run"
 
+### Updating Existing Policies
+
+If you already have RLS policies defined and need to update them (e.g., for performance optimization), you'll need to drop and recreate them:
+
+```sql
+-- Drop existing policies first
+DROP POLICY IF EXISTS "Users can view own spending entries" ON public.spending_entries;
+DROP POLICY IF EXISTS "Users can insert own spending entries" ON public.spending_entries;
+DROP POLICY IF EXISTS "Users can update own spending entries" ON public.spending_entries;
+DROP POLICY IF EXISTS "Users can delete own spending entries" ON public.spending_entries;
+
+DROP POLICY IF EXISTS "Users can view own categories" ON public.categories;
+DROP POLICY IF EXISTS "Users can insert own categories" ON public.categories;
+DROP POLICY IF EXISTS "Users can update own categories" ON public.categories;
+DROP POLICY IF EXISTS "Users can delete own categories" ON public.categories;
+
+-- Then run the CREATE POLICY statements above
+```
+
+**Note:** The `(select ...)` wrapper around `current_setting()` is important for performance - it prevents the function from being re-evaluated for each row, which can cause slow queries at scale.
+
 ## 3. Get Your API Keys
 
 1. Go to "Settings" → "API" in the sidebar
