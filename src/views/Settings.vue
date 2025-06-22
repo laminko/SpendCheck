@@ -6,44 +6,42 @@
       </ion-toolbar>
     </ion-header>
 
-    <ion-content :fullscreen="true">
+    <ion-content :fullscreen="true" class="ion-padding">
         <!-- Authentication Section -->
-        <ion-list class="ion-margin-bottom" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+        <ion-list class="ion-margin-bottom">
           <ion-list-header>
             <ion-label>Account</ion-label>
           </ion-list-header>
 
-          <div v-if="!isRealUser" class="auth-section">
-            <p class="auth-description">
-              Sign in to save your preferences and access advanced features
-            </p>
+          <ion-item v-if="!isRealUser" button @click="showAuthModal = true">
+            <ion-icon :icon="personOutline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Sign In</h3>
+              <p>Save your preferences and access advanced features</p>
+            </ion-label>
+          </ion-item>
 
-            <ion-button expand="block" fill="outline" @click="showAuthModal = true">
-              <ion-icon :icon="personOutline" slot="start"></ion-icon>
-              Sign In
-            </ion-button>
+          <ion-item v-if="!isRealUser" lines="none">
+            <ion-icon :icon="eyeOffOutline" slot="start" color="medium"></ion-icon>
+            <ion-label color="medium">
+              <p>You're currently using SpendCheck as a guest</p>
+            </ion-label>
+          </ion-item>
 
-            <p class="ion-text-center ion-margin-top" style="color: var(--ion-color-medium); font-size: 14px;">
-              <ion-icon :icon="eyeOffOutline" style="margin-right: 8px;"></ion-icon>
-              You're currently using SpendCheck as a guest
-            </p>
-          </div>
-
-          <ion-item v-else>
+          <ion-item v-if="isRealUser">
             <ion-icon :icon="personCircleOutline" slot="start"></ion-icon>
             <ion-label>
               <h3>{{ userProfile?.email || userProfile?.user_metadata?.full_name || 'Authenticated User' }}</h3>
               <p>{{ userProfile?.email || 'Signed in' }}</p>
             </ion-label>
             <ion-button fill="clear" color="danger" slot="end" @click="handleSignOut">
-              <ion-icon :icon="logOutOutline" slot="start"></ion-icon>
-              Sign Out
+              <ion-icon :icon="logOutOutline"></ion-icon>
             </ion-button>
           </ion-item>
         </ion-list>
 
         <!-- Currency Section -->
-        <ion-list class="ion-margin-bottom" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+        <ion-list class="ion-margin-bottom">
           <ion-list-header>
             <ion-label>Currency</ion-label>
           </ion-list-header>
@@ -57,13 +55,15 @@
             <CurrencyPicker slot="end" />
           </ion-item>
 
-          <ion-note v-if="!isRealUser" class="guest-note">
-            Sign in to save currency preference
-          </ion-note>
+          <ion-item v-if="!isRealUser" lines="none">
+            <ion-label color="medium">
+              <p>Sign in to save currency preference</p>
+            </ion-label>
+          </ion-item>
         </ion-list>
 
         <!-- Categories Section -->
-        <ion-list class="ion-margin-bottom" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+        <ion-list class="ion-margin-bottom">
           <ion-list-header>
             <ion-label>Categories</ion-label>
           </ion-list-header>
@@ -76,13 +76,15 @@
             </ion-label>
           </ion-item>
 
-          <ion-note v-if="!isRealUser" class="guest-note">
-            Sign in to manage custom categories
-          </ion-note>
+          <ion-item v-if="!isRealUser" lines="none">
+            <ion-label color="medium">
+              <p>Sign in to manage custom categories</p>
+            </ion-label>
+          </ion-item>
         </ion-list>
 
         <!-- App Info Section -->
-        <ion-list class="ion-margin-bottom" style="max-width: 600px; margin-left: auto; margin-right: auto;">
+        <ion-list class="ion-margin-bottom">
           <ion-list-header>
             <ion-label>About</ion-label>
           </ion-list-header>
@@ -98,142 +100,125 @@
 
       <!-- Authentication Modal -->
       <ion-modal :is-open="showAuthModal" @did-dismiss="resetAuthModal">
-        <div class="auth-modal">
-          <div class="auth-modal-content">
-            <h2 v-if="!showEmailForm">Sign In</h2>
-            <h2 v-else>{{ isSignUp ? 'Create Account' : 'Sign In' }}</h2>
-            <p v-if="!showEmailForm">Choose how you'd like to sign in</p>
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>{{ showEmailForm ? (isSignUp ? 'Create Account' : 'Sign In') : 'Sign In' }}</ion-title>
+            <ion-buttons slot="end">
+              <ion-button @click="resetAuthModal">Close</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        
+        <ion-content class="ion-padding">
+          <!-- Email/Password Form -->
+          <div v-if="showEmailForm">
+            <ion-list>
+              <ion-item>
+                <ion-input 
+                  v-model="email" 
+                  type="email" 
+                  label="Email"
+                  labelPlacement="floating"
+                  placeholder="Enter your email"
+                  :class="{ 'ion-invalid': !isEmailValid && email.length > 0, 'ion-touched': email.length > 0 }"
+                  autocomplete="email"
+                  clear-input
+                  @ion-blur="validateField('email')"
+                ></ion-input>
+              </ion-item>
+              <ion-text color="danger" v-if="formErrors.email">
+                <p class="ion-margin-start">{{ formErrors.email }}</p>
+              </ion-text>
 
-            <!-- Email/Password Form -->
-            <div v-if="showEmailForm" class="email-form">
-              <div class="form-container">
-                <!-- Email Input -->
-                <div class="input-group">
-                  <ion-item lines="none" class="input-item">
-                    <ion-input 
-                      v-model="email" 
-                      type="email" 
-                      label="Email"
-                      labelPlacement="floating"
-                      fill="outline"
-                      placeholder="Enter your email"
-                      :class="{ 'ion-invalid': !isEmailValid && email.length > 0, 'ion-touched': email.length > 0 }"
-                      autocomplete="email"
-                      clear-input
-                      @ion-blur="validateField('email')"
-                    ></ion-input>
-                  </ion-item>
-                  <div class="error-message" v-if="formErrors.email">
-                    {{ formErrors.email }}
-                  </div>
-                </div>
+              <ion-item>
+                <ion-input 
+                  v-model="password" 
+                  type="password" 
+                  label="Password"
+                  labelPlacement="floating"
+                  placeholder="Enter your password"
+                  :class="{ 'ion-invalid': !isPasswordValid && password.length > 0, 'ion-touched': password.length > 0 }"
+                  autocomplete="current-password"
+                  clear-input
+                  @ion-blur="validateField('password')"
+                ></ion-input>
+              </ion-item>
+              <ion-text color="medium" v-if="!formErrors.password && isSignUp">
+                <p class="ion-margin-start">Password must be at least 6 characters</p>
+              </ion-text>
+              <ion-text color="danger" v-if="formErrors.password">
+                <p class="ion-margin-start">{{ formErrors.password }}</p>
+              </ion-text>
 
-                <!-- Password Input -->
-                <div class="input-group">
-                  <ion-item lines="none" class="input-item">
-                    <ion-input 
-                      v-model="password" 
-                      type="password" 
-                      label="Password"
-                      labelPlacement="floating"
-                      fill="outline"
-                      placeholder="Enter your password"
-                      :class="{ 'ion-invalid': !isPasswordValid && password.length > 0, 'ion-touched': password.length > 0 }"
-                      autocomplete="current-password"
-                      clear-input
-                      @ion-blur="validateField('password')"
-                    ></ion-input>
-                  </ion-item>
-                  <div class="helper-text" v-if="!formErrors.password && isSignUp">
-                    Password must be at least 6 characters
-                  </div>
-                  <div class="error-message" v-if="formErrors.password">
-                    {{ formErrors.password }}
-                  </div>
-                </div>
+              <ion-item v-if="isSignUp">
+                <ion-input 
+                  v-model="confirmPassword" 
+                  type="password" 
+                  label="Confirm Password"
+                  labelPlacement="floating"
+                  placeholder="Confirm your password"
+                  :class="{ 'ion-invalid': !isConfirmPasswordValid && confirmPassword.length > 0, 'ion-touched': confirmPassword.length > 0 }"
+                  autocomplete="new-password"
+                  clear-input
+                  @ion-blur="validateField('confirmPassword')"
+                ></ion-input>
+              </ion-item>
+              <ion-text color="danger" v-if="formErrors.confirmPassword">
+                <p class="ion-margin-start">{{ formErrors.confirmPassword }}</p>
+              </ion-text>
+            </ion-list>
 
-                <!-- Confirm Password Input (Sign Up Only) -->
-                <div class="input-group" v-if="isSignUp">
-                  <ion-item lines="none" class="input-item">
-                    <ion-input 
-                      v-model="confirmPassword" 
-                      type="password" 
-                      label="Confirm Password"
-                      labelPlacement="floating"
-                      fill="outline"
-                      placeholder="Confirm your password"
-                      :class="{ 'ion-invalid': !isConfirmPasswordValid && confirmPassword.length > 0, 'ion-touched': confirmPassword.length > 0 }"
-                      autocomplete="new-password"
-                      clear-input
-                      @ion-blur="validateField('confirmPassword')"
-                    ></ion-input>
-                  </ion-item>
-                  <div class="error-message" v-if="formErrors.confirmPassword">
-                    {{ formErrors.confirmPassword }}
-                  </div>
-                </div>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="button-group">
-                <ion-button 
-                  expand="block" 
-                  size="large"
-                  @click="handleEmailAuth"
-                  :disabled="!isFormValid || isLoading"
-                  class="primary-button"
-                >
-                  <ion-spinner v-if="isLoading" name="crescent"></ion-spinner>
-                  <span v-else>{{ isSignUp ? 'Create Account' : 'Sign In' }}</span>
-                </ion-button>
-
-                <ion-button 
-                  expand="block" 
-                  fill="clear" 
-                  size="large"
-                  @click="toggleSignUpMode"
-                  :disabled="isLoading"
-                  class="secondary-button"
-                >
-                  {{ isSignUp ? 'Already have an account? Sign in' : 'Need an account? Sign up' }}
-                </ion-button>
-
-                <ion-button 
-                  expand="block" 
-                  fill="clear" 
-                  size="default"
-                  @click="resetAuthModal"
-                  :disabled="isLoading"
-                  class="tertiary-button"
-                >
-                  Back
-                </ion-button>
-              </div>
-            </div>
-
-            <!-- OAuth Buttons -->
-            <div v-else class="auth-buttons">
-              <ion-button expand="block" fill="outline" @click="showEmailForm = true">
-                <ion-icon :icon="mailOutline" slot="start" style="font-size: 24px; margin-right: 8px;"></ion-icon>
-                Continue with Email
+            <div class="ion-margin-top">
+              <ion-button 
+                expand="block" 
+                @click="handleEmailAuth"
+                :disabled="!isFormValid || isLoading"
+              >
+                <ion-spinner v-if="isLoading" name="crescent" slot="start"></ion-spinner>
+                {{ isSignUp ? 'Create Account' : 'Sign In' }}
               </ion-button>
 
-              <ion-button expand="block" fill="outline" @click="signInWithGoogle">
-                <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google" slot="start" style="width: 24px; height: 24px; margin-right: 8px;" />
-                Continue with Google
+              <ion-button 
+                expand="block" 
+                fill="clear" 
+                @click="toggleSignUpMode"
+                :disabled="isLoading"
+              >
+                {{ isSignUp ? 'Already have an account? Sign in' : 'Need an account? Sign up' }}
               </ion-button>
 
-              <ion-button expand="block" fill="outline" @click="signInWithFacebook">
-                <ion-icon :icon="logoFacebook" slot="start" style="font-size: 24px; margin-right: 8px;"></ion-icon>
-                Continue with Facebook
-              </ion-button>
-
-              <ion-button expand="block" fill="clear" @click="resetAuthModal">
-                Cancel
+              <ion-button 
+                expand="block" 
+                fill="clear" 
+                color="medium"
+                @click="resetAuthModal"
+                :disabled="isLoading"
+              >
+                Back
               </ion-button>
             </div>
           </div>
-        </div>
+
+          <!-- OAuth Options -->
+          <div v-else>
+            <p class="ion-text-center ion-margin-bottom">Choose how you'd like to sign in</p>
+            
+            <ion-button expand="block" fill="outline" @click="showEmailForm = true" class="ion-margin-bottom">
+              <ion-icon :icon="mail" slot="start" style="margin-right: 12px;"></ion-icon>
+              Continue with Email
+            </ion-button>
+
+            <ion-button expand="block" fill="outline" @click="signInWithGoogle" class="ion-margin-bottom">
+              <img src="https://fonts.gstatic.com/s/i/productlogos/googleg/v6/24px.svg" alt="Google" slot="start" style="width: 20px; height: 20px; margin-right: 12px;" />
+              Continue with Google
+            </ion-button>
+
+            <ion-button expand="block" fill="outline" @click="signInWithFacebook" class="ion-margin-bottom">
+              <ion-icon :icon="logoFacebook" slot="start" style="margin-right: 12px;"></ion-icon>
+              Continue with Facebook
+            </ion-button>
+          </div>
+        </ion-content>
       </ion-modal>
 
     </ion-content>
@@ -249,15 +234,16 @@ import {
   IonTitle,
   IonContent,
   IonButton,
+  IonButtons,
   IonIcon,
   IonItem,
   IonLabel,
-  IonNote,
   IonModal,
   IonList,
   IonListHeader,
   IonInput,
   IonSpinner,
+  IonText,
   toastController
 } from '@ionic/vue'
 import {
@@ -269,7 +255,7 @@ import {
   folderOutline,
   informationCircleOutline,
   logoFacebook,
-  mailOutline
+  mail
 } from 'ionicons/icons'
 
 import { useAuth } from '@/composables/useAuth'
@@ -476,274 +462,4 @@ onMounted(async () => {
 })
 </script>
 
-<style scoped>
-.auth-section {
-  text-align: center;
-  padding: 24px 16px;
-}
 
-.auth-description {
-  margin-bottom: 24px;
-  color: var(--ion-color-medium);
-  line-height: 1.5;
-}
-
-.guest-note {
-  display: block;
-  margin: 8px 16px;
-  font-size: 12px;
-  color: var(--ion-color-medium);
-}
-
-.auth-modal {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100%;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.4);
-  backdrop-filter: blur(10px);
-}
-
-.auth-modal-content {
-  background: var(--ion-color-light);
-  border-radius: 20px;
-  padding: 32px;
-  width: 100%;
-  max-width: 400px;
-  max-height: 90vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-  transform: translateY(0);
-  transition: all 0.3s ease;
-}
-
-.auth-modal-content h2 {
-  text-align: center;
-  margin: 0 0 8px 0;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--ion-color-dark);
-  letter-spacing: -0.5px;
-}
-
-.auth-modal-content p {
-  text-align: center;
-  color: var(--ion-color-medium);
-  margin-bottom: 32px;
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-/* Email Form Styles */
-.email-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  animation: fadeInUp 0.3s ease;
-}
-
-.form-container {
-  margin-bottom: 24px;
-}
-
-.input-group {
-  margin-bottom: 20px;
-}
-
-.input-item {
-  --border-radius: 12px;
-  --border-width: 1.5px;
-  --border-color: #e1e5e9;
-  --highlight-color-focused: var(--ion-color-primary);
-  --background: #f8f9fa;
-  border-radius: 12px;
-  margin-bottom: 8px;
-  transition: all 0.2s ease;
-}
-
-.input-item:hover {
-  --border-color: #c7d2d7;
-}
-
-.input-item.ion-focused {
-  --border-color: var(--ion-color-primary);
-  --background: white;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
-}
-
-.input-item ion-input {
-  --padding-start: 16px;
-  --padding-end: 16px;
-  --padding-top: 12px;
-  --padding-bottom: 12px;
-  font-size: 16px;
-  font-weight: 400;
-}
-
-.helper-text {
-  font-size: 12px;
-  color: var(--ion-color-medium);
-  margin-top: 4px;
-  margin-left: 16px;
-  line-height: 1.3;
-}
-
-.error-message {
-  font-size: 12px;
-  color: var(--ion-color-danger);
-  margin-top: 4px;
-  margin-left: 16px;
-  font-weight: 500;
-  line-height: 1.3;
-}
-
-/* Button Styles */
-.button-group {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.primary-button {
-  --background: var(--ion-color-primary);
-  --background-hover: #2563eb;
-  --background-activated: #1d4ed8;
-  --color: white;
-  --border-radius: 12px;
-  --box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-  --ripple-color: rgba(255, 255, 255, 0.3);
-  height: 52px;
-  font-weight: 600;
-  font-size: 16px;
-  letter-spacing: 0.25px;
-  margin: 0;
-  transition: all 0.2s ease;
-}
-
-.primary-button:hover {
-  transform: translateY(-1px);
-  --box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-}
-
-.primary-button:disabled {
-  --background: #e5e7eb;
-  --color: #9ca3af;
-  --box-shadow: none;
-  transform: none;
-}
-
-.secondary-button {
-  --color: var(--ion-color-primary);
-  --ripple-color: rgba(59, 130, 246, 0.1);
-  height: 48px;
-  font-weight: 500;
-  font-size: 15px;
-  margin: 0;
-  transition: all 0.2s ease;
-}
-
-.secondary-button:hover {
-  --background: rgba(59, 130, 246, 0.05);
-}
-
-.tertiary-button {
-  --color: var(--ion-color-medium);
-  --ripple-color: rgba(107, 114, 128, 0.1);
-  height: 44px;
-  font-weight: 400;
-  font-size: 14px;
-  margin: 0;
-  transition: all 0.2s ease;
-}
-
-.tertiary-button:hover {
-  --color: var(--ion-color-dark);
-}
-
-/* OAuth Buttons */
-.auth-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-.auth-buttons ion-button {
-  margin: 0;
-  height: 52px;
-  font-weight: 500;
-  font-size: 16px;
-  --border-radius: 12px;
-  --border-width: 1.5px;
-  --border-color: #e1e5e9;
-  --background: white;
-  --color: var(--ion-color-dark);
-  --ripple-color: rgba(0, 0, 0, 0.05);
-  transition: all 0.2s ease;
-}
-
-.auth-buttons ion-button:hover {
-  --border-color: #c7d2d7;
-  --background: #f8f9fa;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.auth-buttons ion-button[fill="clear"] {
-  --background: transparent;
-  --color: var(--ion-color-medium);
-  height: 44px;
-  font-size: 14px;
-}
-
-.auth-buttons ion-button[fill="clear"]:hover {
-  --color: var(--ion-color-dark);
-  --background: rgba(0, 0, 0, 0.02);
-  transform: none;
-  box-shadow: none;
-}
-
-/* Loading State */
-ion-spinner {
-  width: 20px;
-  height: 20px;
-  margin-right: 8px;
-}
-
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-  .auth-modal-content {
-    background: var(--ion-color-step-50);
-    border: 1px solid var(--ion-color-step-150);
-  }
-  
-  .input-item {
-    --background: var(--ion-color-step-100);
-    --border-color: var(--ion-color-step-200);
-  }
-  
-  .auth-buttons ion-button {
-    --background: var(--ion-color-step-100);
-    --border-color: var(--ion-color-step-200);
-    --color: var(--ion-color-step-800);
-  }
-}
-
-/* Animation */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.modal-buttons {
-  margin-top: 16px;
-}
-</style>
