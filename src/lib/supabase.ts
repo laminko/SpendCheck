@@ -8,6 +8,40 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey)
 export type Database = {
   public: {
     Tables: {
+      user_preferences: {
+        Row: {
+          id: string
+          user_id: string
+          currency_code: string
+          currency_symbol: string
+          currency_name: string
+          theme: string
+          notifications_enabled: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          currency_code?: string
+          currency_symbol?: string
+          currency_name?: string
+          theme?: string
+          notifications_enabled?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          currency_code?: string
+          currency_symbol?: string
+          currency_name?: string
+          theme?: string
+          notifications_enabled?: boolean
+          updated_at?: string
+        }
+      }
       spending_entries: {
         Row: {
           id: string
@@ -71,6 +105,18 @@ export type Database = {
       }
     }
   }
+}
+
+export interface UserPreference {
+  id: string
+  user_id: string
+  currency_code: string
+  currency_symbol: string
+  currency_name: string
+  theme: string
+  notifications_enabled: boolean
+  created_at: string
+  updated_at: string
 }
 
 export interface SpendingEntry {

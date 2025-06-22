@@ -62,6 +62,47 @@
           </ion-item>
         </ion-list>
 
+        <!-- Preferences Section -->
+        <ion-list class="ion-margin-bottom" v-if="isRealUser">
+          <ion-list-header>
+            <ion-label>Preferences</ion-label>
+          </ion-list-header>
+
+          <ion-item>
+            <ion-icon :icon="contrastOutline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Theme</h3>
+              <p>{{ theme === 'auto' ? 'System Default' : theme === 'dark' ? 'Dark Mode' : 'Light Mode' }}</p>
+            </ion-label>
+            <ion-select 
+              :value="theme" 
+              slot="end" 
+              interface="popover" 
+              placeholder="Select Theme"
+              @ion-change="handleThemeChange"
+              :disabled="isLoadingPreferences"
+            >
+              <ion-select-option value="auto">System Default</ion-select-option>
+              <ion-select-option value="light">Light Mode</ion-select-option>
+              <ion-select-option value="dark">Dark Mode</ion-select-option>
+            </ion-select>
+          </ion-item>
+
+          <ion-item>
+            <ion-icon :icon="notificationsOutline" slot="start"></ion-icon>
+            <ion-label>
+              <h3>Notifications</h3>
+              <p>Receive reminders and updates</p>
+            </ion-label>
+            <ion-toggle 
+              :checked="notificationsEnabled" 
+              slot="end"
+              @ion-change="handleNotificationToggle"
+              :disabled="isLoadingPreferences"
+            ></ion-toggle>
+          </ion-item>
+        </ion-list>
+
         <!-- Categories Section -->
         <ion-list class="ion-margin-bottom">
           <ion-list-header>
@@ -252,6 +293,9 @@ import {
   IonInput,
   IonSpinner,
   IonText,
+  IonSelect,
+  IonSelectOption,
+  IonToggle,
   toastController
 } from '@ionic/vue'
 import {
@@ -264,16 +308,20 @@ import {
   informationCircleOutline,
   logoFacebook,
   mail,
-  closeOutline
+  closeOutline,
+  contrastOutline,
+  notificationsOutline
 } from 'ionicons/icons'
 
 import { useAuth } from '@/composables/useAuth'
 import { useCurrency } from '@/composables/useCurrency'
+import { useUserPreferences } from '@/composables/useUserPreferences'
 import CurrencyPicker from '@/components/CurrencyPicker.vue'
 import CategoryManagement from '@/components/CategoryManagement.vue'
 
 const { user, isRealUser, signOut, signInWithOAuth, signInWithEmail, signUpWithEmail } = useAuth()
 const { currentCurrency, loadSavedCurrency } = useCurrency()
+const { theme, notificationsEnabled, updateTheme, updateNotifications, isLoadingPreferences } = useUserPreferences()
 
 const showAuthModal = ref(false)
 const showCategoryManagement = ref(false)
@@ -458,6 +506,29 @@ const manageCategoriesDisabled = () => {
   showCategoryManagement.value = true
 }
 
+// Theme and notification handlers
+const handleThemeChange = async (event: CustomEvent) => {
+  const newTheme = event.detail.value
+  try {
+    await updateTheme(newTheme)
+    await showSuccessToast(`Theme updated to ${newTheme === 'auto' ? 'system default' : newTheme + ' mode'}`)
+  } catch (error) {
+    console.error('Failed to update theme:', error)
+    await showErrorToast('Failed to update theme preference')
+  }
+}
+
+const handleNotificationToggle = async (event: CustomEvent) => {
+  const enabled = event.detail.checked
+  try {
+    await updateNotifications(enabled)
+    await showSuccessToast(`Notifications ${enabled ? 'enabled' : 'disabled'}`)
+  } catch (error) {
+    console.error('Failed to update notifications:', error)
+    await showErrorToast('Failed to update notification preference')
+  }
+}
+
 onMounted(async () => {
   // Initialize authentication to ensure we have proper state
   try {
@@ -465,7 +536,7 @@ onMounted(async () => {
     await ensureValidSession() // This will create anonymous session if needed
 
     // Load saved currency preference
-    loadSavedCurrency()
+    await loadSavedCurrency()
   } catch (error) {
     console.error('Error initializing settings:', error)
   }

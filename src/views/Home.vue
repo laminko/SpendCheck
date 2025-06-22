@@ -181,10 +181,10 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
 
 
 onMounted(async () => {
-  loadSavedCurrency()
-  // Initialize authentication first, then load entries
+  // Initialize authentication first, then load preferences and entries
   try {
     await initializeAuth()
+    await loadSavedCurrency()
     await loadEntries()
   } catch (error) {
     console.error('Error initializing app:', error)

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { Selectors } from './selectors';
 
 test.describe('Settings and Currency Picker', () => {
   test.beforeEach(async ({ page }) => {
@@ -8,27 +9,27 @@ test.describe('Settings and Currency Picker', () => {
 
   test('should display settings page correctly', async ({ page }) => {
     // Check main sections are present
-    await expect(page.locator('text=Settings')).toBeVisible();
-    await expect(page.locator('text=Account')).toBeVisible();
-    await expect(page.locator('text=Currency')).toBeVisible();
-    await expect(page.locator('text=Categories')).toBeVisible();
-    await expect(page.locator('text=About')).toBeVisible();
+    await expect(page.locator(Selectors.settingsTitle)).toBeVisible();
+    await expect(page.locator(Selectors.accountSection)).toBeVisible();
+    await expect(page.locator(Selectors.currencySection)).toBeVisible();
+    await expect(page.locator(Selectors.categoriesSection)).toBeVisible();
+    await expect(page.locator(Selectors.aboutSection)).toBeVisible();
   });
 
   test('should show app version', async ({ page }) => {
-    await expect(page.locator('text=SpendCheck')).toBeVisible();
-    await expect(page.locator('text=Version 1.2.0')).toBeVisible();
+    await expect(page.locator(Selectors.spendCheckTitle)).toBeVisible();
+    await expect(page.locator(Selectors.appVersionText)).toBeVisible();
   });
 
   test('should display currency section', async ({ page }) => {
-    await expect(page.locator('text=Preferred Currency')).toBeVisible();
+    await expect(page.locator(Selectors.preferredCurrencyItem)).toBeVisible();
     await expect(page.locator('text=US Dollar ($)')).toBeVisible();
     await expect(page.locator('text=$ USD')).toBeVisible();
   });
 
   test('should show currency picker button', async ({ page }) => {
     // Look for the currency picker button
-    const currencyButton = page.locator('button:has-text("$ USD")');
+    const currencyButton = page.locator(Selectors.currencyPickerButton);
     await expect(currencyButton).toBeVisible();
   });
 

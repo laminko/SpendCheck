@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { Selectors } from './selectors';
 
 test.describe('Email Authentication', () => {
   // Test credentials for email authentication - must be set via environment variables
@@ -13,18 +14,18 @@ test.describe('Email Authentication', () => {
 
   test('should show guest state initially', async ({ page }) => {
     // Check that we're in guest mode
-    await expect(page.locator('text=You\'re currently using SpendCheck as a guest')).toBeVisible();
-    await expect(page.locator('text=Sign In')).toBeVisible();
-    await expect(page.locator('text=Save your preferences and access advanced features')).toBeVisible();
+    await expect(page.locator(Selectors.guestStateText)).toBeVisible();
+    await expect(page.locator(Selectors.signInButton)).toBeVisible();
+    await expect(page.locator(Selectors.signInDescription)).toBeVisible();
     
     // Check that features are gated
-    await expect(page.locator('text=Sign in to save currency preference')).toBeVisible();
-    await expect(page.locator('text=Sign in to manage custom categories')).toBeVisible();
+    await expect(page.locator(Selectors.currencySignInPrompt)).toBeVisible();
+    await expect(page.locator(Selectors.categorySignInPrompt)).toBeVisible();
   });
 
   test('should open sign-in modal when clicking Sign In', async ({ page }) => {
-    // Look for the Sign In button - try different selectors
-    const signInButton = page.locator('button:has-text("Sign In")').first();
+    // Look for the Sign In button using specific selector
+    const signInButton = page.locator(Selectors.signInButton).first();
     await signInButton.waitFor({ state: 'visible' });
     
     // Click the Sign In button

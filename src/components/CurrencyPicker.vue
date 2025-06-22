@@ -88,10 +88,17 @@ const filteredCurrencies = computed(() => {
   )
 })
 
-const selectCurrency = (currency: Currency) => {
-  setCurrency(currency)
-  showModal.value = false
-  searchQuery.value = ''
+const selectCurrency = async (currency: Currency) => {
+  try {
+    await setCurrency(currency)
+    showModal.value = false
+    searchQuery.value = ''
+  } catch (error) {
+    console.error('Error setting currency:', error)
+    // Still close modal on error
+    showModal.value = false
+    searchQuery.value = ''
+  }
 }
 
 const closeModal = () => {

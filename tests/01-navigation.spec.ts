@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { Selectors } from './selectors';
 
 test.describe('Navigation and Page Loading', () => {
   test('should load home page successfully', async ({ page }) => {

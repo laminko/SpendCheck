@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { Selectors } from './selectors';
 
 test.describe('Spending Entry Functionality', () => {
   test.beforeEach(async ({ page }) => {
@@ -9,34 +10,34 @@ test.describe('Spending Entry Functionality', () => {
 
   test('should open spending dialog when clicking spend button', async ({ page }) => {
     // Click the main spending button
-    await page.click('button:has-text("Any spending?")');
+    await page.click(Selectors.spendButton);
     
     // Check that dialog opened
-    await expect(page.locator('text=Add Spending')).toBeVisible();
-    await expect(page.locator('input[placeholder="0.00"]')).toBeVisible();
+    await expect(page.locator(Selectors.spendingDialog)).toBeVisible();
+    await expect(page.locator(Selectors.amountInput)).toBeVisible();
     await expect(page.locator('text=Category')).toBeVisible();
-    await expect(page.locator('button:has-text("Save")')).toBeVisible();
-    await expect(page.locator('button:has-text("Cancel")')).toBeVisible();
+    await expect(page.locator(Selectors.saveButton)).toBeVisible();
+    await expect(page.locator(Selectors.cancelButton)).toBeVisible();
   });
 
   test('should validate amount input', async ({ page }) => {
-    await page.click('button:has-text("Any spending?")');
-    await expect(page.locator('text=Add Spending')).toBeVisible();
+    await page.click(Selectors.spendButton);
+    await expect(page.locator(Selectors.spendingDialog)).toBeVisible();
     
     // Save button should be disabled initially
-    await expect(page.locator('button:has-text("Save")')).toBeDisabled();
+    await expect(page.locator(Selectors.saveButton)).toBeDisabled();
     
     // Enter a valid amount
-    await page.fill('input[placeholder="0.00"]', '25.50');
+    await page.fill(Selectors.amountInput, '25.50');
     
     // Save button should now be enabled
-    await expect(page.locator('button:has-text("Save")')).toBeEnabled();
+    await expect(page.locator(Selectors.saveButton)).toBeEnabled();
     
     // Clear amount
-    await page.fill('input[placeholder="0.00"]', '');
+    await page.fill(Selectors.amountInput, '');
     
     // Save button should be disabled again
-    await expect(page.locator('button:has-text("Save")')).toBeDisabled();
+    await expect(page.locator(Selectors.saveButton)).toBeDisabled();
   });
 
   test('should add spending entry successfully', async ({ page }) => {
