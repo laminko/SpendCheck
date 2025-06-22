@@ -22,6 +22,7 @@
           <ion-icon :icon="settingsOutline"></ion-icon>
           <ion-label>Settings</ion-label>
         </ion-tab-button>
+
       </ion-tab-bar>
     </ion-tabs>
   </ion-page>
@@ -37,5 +38,6 @@ import {
   IonLabel,
   IonRouterOutlet
 } from '@ionic/vue'
+
 import { homeOutline, timeOutline, barChartOutline, settingsOutline } from 'ionicons/icons'
 </script>

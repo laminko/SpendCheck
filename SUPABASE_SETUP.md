@@ -84,14 +84,6 @@ CREATE TABLE public.categories (
 -- Create index for categories
 CREATE INDEX IF NOT EXISTS idx_categories_user_id ON public.categories USING btree (user_id);
 
--- Add category reference to spending_entries
-ALTER TABLE public.spending_entries ADD COLUMN IF NOT EXISTS category_id uuid;
-ALTER TABLE public.spending_entries ADD CONSTRAINT fk_spending_entries_category 
-    FOREIGN KEY (category_id) REFERENCES public.categories(id) ON DELETE SET NULL;
-
--- Enable RLS on all tables
-ALTER TABLE public.spending_entries ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.user_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.categories ENABLE ROW LEVEL SECURITY;
 
 -- Create policy to allow users to see only their own data
@@ -194,6 +186,7 @@ CREATE INDEX IF NOT EXISTS idx_user_preferences_user_id ON public.user_preferenc
 CREATE INDEX IF NOT EXISTS idx_categories_is_default ON public.categories(is_default);
 CREATE INDEX IF NOT EXISTS idx_categories_is_active ON public.categories(is_active);
 CREATE INDEX IF NOT EXISTS idx_spending_entries_category_id ON public.spending_entries(category_id);
+
 ```
 
 4. Click "Run"
@@ -256,3 +249,4 @@ Run your app with `npm run dev` and try logging a spending entry. Check the Supa
 - Categories have a unique constraint per user to prevent duplicates
 - Auto-created user preferences for new signups via database trigger
 - Automatic timestamp updates for user_preferences and categories tables
+

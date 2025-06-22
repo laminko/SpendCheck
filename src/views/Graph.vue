@@ -51,7 +51,6 @@ const { initializeAuth } = useAuth()
 const currentMonthTotal = computed(() => {
   const firstDay = getThisMonthFirstDay()
   const lastDay = getThisMonthLastDay()
-
   return entries.value
     .filter(entry => {
       const entryDate = toLocalDateString(entry.date)
@@ -82,12 +81,6 @@ const monthlyChangePercentage = computed(() => {
   const change = ((currentMonthTotal.value - lastMonthTotal.value) / lastMonthTotal.value) * 100
   return Math.round(change)
 })
-
-
-
-
-
-
 
 onMounted(async () => {
   await initializeAuth()

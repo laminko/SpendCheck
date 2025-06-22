@@ -105,6 +105,7 @@ const loading = ref(false)
 const { currencyCode, loadSavedCurrency, formatAmount } = useCurrency()
 const { entries, todayTotal, thisMonthTotal, loadEntries, addEntry } = useSpendingStore()
 const { initializeAuth } = useAuth()
+
 const showSpendingDialog = ref(false)
 const route = useRoute()
 
@@ -177,8 +178,6 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
     loading.value = false
   }
 }
-
-
 
 onMounted(async () => {
   // Initialize authentication first, then load preferences and entries
