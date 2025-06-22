@@ -211,6 +211,8 @@ const saveSpending = async () => {
     if (newCategory) {
       categoryId = newCategory.id
       categoryName = newCategory.name
+      // Reload categories to update the list
+      await loadCategories()
     }
   } else if (selectedCategory.value && selectedCategory.value !== 'custom') {
     // Find the selected category to get its name

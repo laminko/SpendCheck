@@ -2,7 +2,7 @@
   <ion-page>
     <ion-header :translucent="true">
       <ion-toolbar>
-        <ion-title>Analytics</ion-title>
+        <ion-title>Stats</ion-title>
       </ion-toolbar>
     </ion-header>
 
@@ -39,17 +39,18 @@ import MonthlySpendingChart from '@/components/MonthlySpendingChart.vue'
 import { useCurrency } from '@/composables/useCurrency'
 import { useSpendingStore } from '@/composables/useSpendingStore'
 import { useDateUtils } from '@/composables/useDateUtils'
+import { useAuth } from '@/composables/useAuth'
 
 const { formatAmount } = useCurrency()
 const { entries, loadEntries } = useSpendingStore()
 const { getThisMonthFirstDay, getThisMonthLastDay, getLastMonthFirstDay, getLastMonthLastDay, toLocalDateString } = useDateUtils()
+const { initializeAuth } = useAuth()
 
 
 // Calculate current month total
 const currentMonthTotal = computed(() => {
   const firstDay = getThisMonthFirstDay()
   const lastDay = getThisMonthLastDay()
-  
   return entries.value
     .filter(entry => {
       const entryDate = toLocalDateString(entry.date)
@@ -62,7 +63,7 @@ const currentMonthTotal = computed(() => {
 const lastMonthTotal = computed(() => {
   const firstDay = getLastMonthFirstDay()
   const lastDay = getLastMonthLastDay()
-  
+
   return entries.value
     .filter(entry => {
       const entryDate = toLocalDateString(entry.date)
@@ -76,18 +77,13 @@ const monthlyChangePercentage = computed(() => {
   if (lastMonthTotal.value === 0) {
     return currentMonthTotal.value > 0 ? 100 : null
   }
-  
+
   const change = ((currentMonthTotal.value - lastMonthTotal.value) / lastMonthTotal.value) * 100
   return Math.round(change)
 })
 
-
-
-
-
-
-
-onMounted(() => {
+onMounted(async () => {
+  await initializeAuth()
   loadEntries()
 })
 </script>
