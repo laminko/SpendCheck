@@ -12,7 +12,12 @@
     "ios": "npm run build:mobile && npx cap open ios",
     "android": "npm run build:mobile && npx cap open android",
     "add:ios": "npx cap add ios",
-    "add:android": "npx cap add android"
+    "add:android": "npx cap add android",
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:ui": "playwright test --ui",
+    "test:debug": "playwright test --debug",
+    "test:report": "playwright show-report"
   },
   "dependencies": {
     "@capacitor/android": "^7.3.0",
@@ -37,6 +42,7 @@
     "vue-router": "^4.2.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.53.1",
     "@vitejs/plugin-vue": "^5.0.0",
     "prisma": "^6.10.1",
     "typescript": "^5.2.0",

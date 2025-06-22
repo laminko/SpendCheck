@@ -99,10 +99,12 @@ import CurrencyPicker from '@/components/CurrencyPicker.vue'
 import SpendingDialog from '@/components/SpendingDialog.vue'
 import { useCurrency } from '@/composables/useCurrency'
 import { useSpendingStore } from '@/composables/useSpendingStore'
+import { useAuth } from '@/composables/useAuth'
 
 const loading = ref(false)
 const { currencyCode, loadSavedCurrency, formatAmount } = useCurrency()
 const { entries, todayTotal, thisMonthTotal, loadEntries, addEntry } = useSpendingStore()
+const { initializeAuth } = useAuth()
 const showSpendingDialog = ref(false)
 const route = useRoute()
 
@@ -178,15 +180,26 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
 
 
 
-onMounted(() => {
+onMounted(async () => {
   loadSavedCurrency()
-  loadEntries()
+  // Initialize authentication first, then load entries
+  try {
+    await initializeAuth()
+    await loadEntries()
+  } catch (error) {
+    console.error('Error initializing app:', error)
+  }
 })
 
 // Watch for route changes to this tab
-watch(() => route.path, (newPath) => {
+watch(() => route.path, async (newPath) => {
   if (newPath === '/tabs/home') {
-    loadEntries()
+    try {
+      await initializeAuth()
+      await loadEntries()
+    } catch (error) {
+      console.error('Error refreshing data:', error)
+    }
   }
 }, { immediate: false })
 </script>

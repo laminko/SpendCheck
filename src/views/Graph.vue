@@ -39,10 +39,12 @@ import MonthlySpendingChart from '@/components/MonthlySpendingChart.vue'
 import { useCurrency } from '@/composables/useCurrency'
 import { useSpendingStore } from '@/composables/useSpendingStore'
 import { useDateUtils } from '@/composables/useDateUtils'
+import { useAuth } from '@/composables/useAuth'
 
 const { formatAmount } = useCurrency()
 const { entries, loadEntries } = useSpendingStore()
 const { getThisMonthFirstDay, getThisMonthLastDay, getLastMonthFirstDay, getLastMonthLastDay, toLocalDateString } = useDateUtils()
+const { initializeAuth } = useAuth()
 
 
 // Calculate current month total
@@ -87,7 +89,8 @@ const monthlyChangePercentage = computed(() => {
 
 
 
-onMounted(() => {
+onMounted(async () => {
+  await initializeAuth()
   loadEntries()
 })
 </script>

@@ -37,3 +37,8 @@ screenshots/
 .vercel
 
 /generated/prisma
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/

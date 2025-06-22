@@ -4,7 +4,9 @@
       "Bash(mkdir:*)",
       "Bash(npm run build:*)",
       "Bash(gh issue view:*)",
-      "Bash(gh issue list:*)"
+      "Bash(gh issue list:*)",
+      "mcp__memory__create_entities",
+      "mcp__memory__create_relations"
     ],
     "deny": []
   }

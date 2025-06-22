@@ -99,6 +99,43 @@ npm run build      # Build for production
 npm run typecheck  # Check TypeScript
 ```
 
+## 🧪 Testing
+
+**Comprehensive Playwright test suite** with 40+ automated tests covering:
+
+- **Navigation & Page Loading** - URL routing, initial state, responsive design
+- **Spending Entry** - Form validation, data persistence, dialog interactions  
+- **Authentication** - Guest mode, email sign-in, OAuth detection
+- **Settings & Currency** - Currency picker, feature gating, app configuration
+- **History & Analytics** - Transaction history, data consistency, charts
+
+### Running Tests
+
+```bash
+npm run test           # Run all tests (headless)
+npm run test:headed    # Run with browser visible
+npm run test:ui        # Interactive test runner
+npm run test:debug     # Debug mode with breakpoints
+npm run test:report    # View HTML test report
+```
+
+### Test Configuration
+
+1. **Add test credentials** to `.env.development` or `.env.production`:
+   ```bash
+   TEST_LOGIN_EMAIL=your-test-email@example.com
+   TEST_LOGIN_PASSWORD=your-test-password
+   ```
+
+2. **Run specific test suites**:
+   ```bash
+   npm run test tests/01-navigation.spec.ts     # Navigation tests
+   npm run test tests/02-spending-entry.spec.ts # Spending functionality
+   npm run test tests/03-authentication.spec.ts # Auth flow (requires credentials)
+   ```
+
+**Note:** Authentication tests skip gracefully if `TEST_LOGIN_EMAIL` and `TEST_LOGIN_PASSWORD` are not configured.
+
 ## 📚 Documentation
 
 - [Supabase Setup Guide](./SUPABASE_SETUP.md)

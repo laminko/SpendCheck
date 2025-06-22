@@ -90,11 +90,13 @@ import { receiptOutline, trashOutline } from 'ionicons/icons'
 import { useCurrency } from '@/composables/useCurrency'
 import { useSpendingStore } from '@/composables/useSpendingStore'
 import { useDateUtils } from '@/composables/useDateUtils'
+import { useAuth } from '@/composables/useAuth'
 
 const { formatAmount } = useCurrency()
 const route = useRoute()
 const { entries, loadEntries, deleteEntry } = useSpendingStore()
 const { getDaysAgo, toLocalDateString, formatRelativeDate, formatDateTime } = useDateUtils()
+const { initializeAuth } = useAuth()
 
 // Filter entries to show only last 7 days
 const filteredEntries = computed(() => {
@@ -212,7 +214,8 @@ const handleDeleteEntry = async (entryId: string) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await initializeAuth()
   loadEntries()
 })
 
