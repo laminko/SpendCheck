@@ -280,6 +280,10 @@ watch(() => route.path, (newPath) => {
 
 .stat-card {
   margin: 0;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid #E5E5EA;
 }
 
 .stat-number {
