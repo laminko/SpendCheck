@@ -98,6 +98,12 @@
           </ion-item>
         </ion-list>
 
+      <!-- Category Management Modal -->
+      <CategoryManagement 
+        :is-open="showCategoryManagement" 
+        @close="showCategoryManagement = false" 
+      />
+
       <!-- Authentication Modal -->
       <ion-modal :is-open="showAuthModal" @did-dismiss="resetAuthModal">
         <ion-header>
@@ -264,11 +270,13 @@ import {
 import { useAuth } from '@/composables/useAuth'
 import { useCurrency } from '@/composables/useCurrency'
 import CurrencyPicker from '@/components/CurrencyPicker.vue'
+import CategoryManagement from '@/components/CategoryManagement.vue'
 
 const { user, isRealUser, signOut, signInWithOAuth, signInWithEmail, signUpWithEmail } = useAuth()
 const { currentCurrency, loadSavedCurrency } = useCurrency()
 
 const showAuthModal = ref(false)
+const showCategoryManagement = ref(false)
 const showEmailForm = ref(false)
 const isSignUp = ref(false)
 const email = ref('')
@@ -447,8 +455,7 @@ const manageCategoriesDisabled = () => {
   if (!isRealUser.value) {
     return
   }
-  // TODO: Navigate to category management page
-  console.log('Manage categories')
+  showCategoryManagement.value = true
 }
 
 onMounted(async () => {
