@@ -104,7 +104,9 @@
           <ion-toolbar>
             <ion-title>{{ showEmailForm ? (isSignUp ? 'Create Account' : 'Sign In') : 'Sign In' }}</ion-title>
             <ion-buttons slot="end">
-              <ion-button @click="resetAuthModal">Close</ion-button>
+              <ion-button fill="clear" @click="resetAuthModal">
+                <ion-icon :icon="closeOutline"></ion-icon>
+              </ion-button>
             </ion-buttons>
           </ion-toolbar>
         </ion-header>
@@ -255,7 +257,8 @@ import {
   folderOutline,
   informationCircleOutline,
   logoFacebook,
-  mail
+  mail,
+  closeOutline
 } from 'ionicons/icons'
 
 import { useAuth } from '@/composables/useAuth'
