@@ -45,3 +45,6 @@ playwright/.cache/
 
 # Claude Code local settings
 .claude/
+
+# Claude Code project memory (persistent local memory)
+CLAUDE.md
