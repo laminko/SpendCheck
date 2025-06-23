@@ -70,6 +70,7 @@
       :is-open="showSpendingDialog"
       @close="showSpendingDialog = false"
       @save="logSpending"
+      @set-saving="setSaving"
     />
   </ion-page>
 </template>
@@ -102,6 +103,7 @@ import { useSpendingStore } from '@/composables/useSpendingStore'
 import { useAuth } from '@/composables/useAuth'
 
 const loading = ref(false)
+const dialogSaving = ref(false)
 const { currencyCode, loadSavedCurrency, formatAmount } = useCurrency()
 const { entries, todayTotal, thisMonthTotal, loadEntries, addEntry } = useSpendingStore()
 const { initializeAuth } = useAuth()
@@ -118,6 +120,10 @@ const handleSpendButtonClick = async () => {
     // Haptics not available on web
   }
   showSpendingDialog.value = true
+}
+
+const setSaving = (saving: boolean) => {
+  dialogSaving.value = saving
 }
 
 const logSpending = async (spendingData: { amount: number; category?: string; categoryId?: string; date?: string }) => {
@@ -140,9 +146,6 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
       date: date
     })
 
-    // Keep dialog open for multiple entries
-    // showSpendingDialog.value = false
-
     // Show success toast
     const toast = await toastController.create({
       message: `${formatAmount(amount)} ${category ? `for ${category}` : ''} tracked successfully!`,
@@ -157,6 +160,9 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
       ]
     })
     await toast.present()
+    
+    // Close dialog after successful save
+    showSpendingDialog.value = false
   } catch (error) {
     console.error('Error logging spending:', error)
     
@@ -174,6 +180,9 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
       ]
     })
     await toast.present()
+    
+    // Close dialog after error as well
+    showSpendingDialog.value = false
   } finally {
     loading.value = false
   }

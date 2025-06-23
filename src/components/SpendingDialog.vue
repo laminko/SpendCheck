@@ -98,11 +98,12 @@
           color="primary" 
           shape="round"
           @click="saveSpending"
-          :disabled="!isValid"
+          :disabled="!isValid || isSaving"
           strong
         >
-          <ion-icon :icon="checkmarkOutline" slot="start"></ion-icon>
-          Save
+          <ion-icon :icon="checkmarkOutline" slot="start" v-if="!isSaving"></ion-icon>
+          <ion-spinner v-if="isSaving" slot="start" name="crescent"></ion-spinner>
+          {{ isSaving ? 'Saving...' : 'Save' }}
         </ion-button>
       </div>
     </ion-content>
@@ -127,7 +128,8 @@ import {
   IonItem,
   IonLabel,
   IonDatetime,
-  IonDatetimeButton
+  IonDatetimeButton,
+  IonSpinner
 } from '@ionic/vue'
 import { closeOutline, checkmarkOutline } from 'ionicons/icons'
 import { useCurrency } from '@/composables/useCurrency'
@@ -144,6 +146,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   close: []
   save: [data: { amount: number; category?: string; categoryId?: string; date?: string }]
+  setSaving: [saving: boolean]
 }>()
 
 // Composables
@@ -171,6 +174,7 @@ const selectedCategory = ref('')
 const customCategory = ref('')
 const amountInput = ref()
 const selectedDate = ref(getLocalDatetimeString())
+const isSaving = ref(false)
 
 // Computed
 const maxDate = computed(() => {
@@ -197,50 +201,58 @@ const onDateChange = (event: any) => {
 }
 
 const saveSpending = async () => {
-  if (!isValid.value) return
+  if (!isValid.value || isSaving.value) return
 
-  let categoryId = selectedCategory.value
-  let categoryName = selectedCategory.value
+  isSaving.value = true
+  emit('setSaving', true)
 
-  // Handle custom category creation
-  if (selectedCategory.value === 'custom' && customCategory.value.trim()) {
-    const newCategory = await addCategory({
-      name: customCategory.value.trim(),
-      icon: '📝'
+  try {
+    let categoryId = selectedCategory.value
+    let categoryName = selectedCategory.value
+
+    // Handle custom category creation
+    if (selectedCategory.value === 'custom' && customCategory.value.trim()) {
+      const newCategory = await addCategory({
+        name: customCategory.value.trim(),
+        icon: '📝'
+      })
+      
+      if (newCategory) {
+        categoryId = newCategory.id
+        categoryName = newCategory.name
+        // Reload categories to update the list
+        await loadCategories()
+      }
+    } else if (selectedCategory.value && selectedCategory.value !== 'custom') {
+      // Find the selected category to get its name
+      const category = categories.value.find(cat => cat.id === selectedCategory.value)
+      categoryName = category?.name || selectedCategory.value
+    }
+
+    // Convert local datetime to UTC ISO string for database storage
+    const localDate = new Date(selectedDate.value)
+    const utcISOString = localDate.toISOString()
+
+    emit('save', {
+      amount: parseFloat(amount.value),
+      categoryId: categoryId === 'custom' ? undefined : categoryId,
+      category: categoryName,
+      date: utcISOString
     })
     
-    if (newCategory) {
-      categoryId = newCategory.id
-      categoryName = newCategory.name
-      // Reload categories to update the list
-      await loadCategories()
+    // Reset form but keep the selected category if it was a custom one that was just created
+    amount.value = ''
+    if (selectedCategory.value === 'custom') {
+      selectedCategory.value = categoryId || ''
     }
-  } else if (selectedCategory.value && selectedCategory.value !== 'custom') {
-    // Find the selected category to get its name
-    const category = categories.value.find(cat => cat.id === selectedCategory.value)
-    categoryName = category?.name || selectedCategory.value
+    customCategory.value = ''
+    
+    // Reset selectedDate to current time
+    selectedDate.value = getLocalDatetimeString()
+  } finally {
+    isSaving.value = false
+    emit('setSaving', false)
   }
-
-  // Convert local datetime to UTC ISO string for database storage
-  const localDate = new Date(selectedDate.value)
-  const utcISOString = localDate.toISOString()
-
-  emit('save', {
-    amount: parseFloat(amount.value),
-    categoryId: categoryId === 'custom' ? undefined : categoryId,
-    category: categoryName,
-    date: utcISOString
-  })
-  
-  // Reset form but keep the selected category if it was a custom one that was just created
-  amount.value = ''
-  if (selectedCategory.value === 'custom') {
-    selectedCategory.value = categoryId || ''
-  }
-  customCategory.value = ''
-  
-  // Reset selectedDate to current time
-  selectedDate.value = getLocalDatetimeString()
 }
 
 const resetForm = () => {
