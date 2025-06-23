@@ -478,6 +478,8 @@ const handleEmailAuth = async () => {
         message = 'Password must be at least 6 characters'
       } else if (error.message.includes('Unable to validate email address')) {
         message = 'Please enter a valid email address'
+      } else if (error.message.includes('Email not confirmed')) {
+        message = 'Please check your email and click the confirmation link before signing in'
       }
     }
     

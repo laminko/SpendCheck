@@ -117,34 +117,34 @@ export function useSpendingStore() {
   // Migrate spending data from anonymous to authenticated user
   const migrateAnonymousSpendingData = async (oldUserId: string, newUserId: string) => {
     if (!oldUserId || !newUserId || oldUserId === newUserId) {
-      console.log('Skipping migration: invalid user IDs')
       return
     }
 
     try {
-      console.log(`🔄 Migrating spending data from ${oldUserId} to ${newUserId}...`)
-
-      // Update all spending entries from old user_id to new user_id
-      const { data, error } = await supabase
-        .from('spending_entries')
-        .update({ user_id: newUserId })
-        .eq('user_id', oldUserId)
-        .select('id')
+      // Call Supabase function for server-side migration (bypasses RLS)
+      const { data, error } = await supabase.rpc('migrate_anonymous_spending_data', {
+        old_user_id: oldUserId,
+        new_user_id: newUserId
+      })
 
       if (error) {
         console.error('Migration error:', error)
         throw error
       }
 
-      const migratedCount = data?.length || 0
-      console.log(`✅ Successfully migrated ${migratedCount} spending entries`)
+      const result = data as { success: boolean; migrated_count: number; error?: string }
+      
+      if (!result.success) {
+        console.error('Migration failed:', result.error)
+        throw new Error(result.error || 'Migration failed')
+      }
 
       // Reload entries for the new user to update local state
       await loadEntries()
 
-      return { success: true, migratedCount }
+      return { success: true, migratedCount: result.migrated_count }
     } catch (error) {
-      console.error('❌ Failed to migrate spending data:', error)
+      console.error('Failed to migrate spending data:', error)
       throw error
     }
   }

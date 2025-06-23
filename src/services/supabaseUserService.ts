@@ -34,10 +34,9 @@ export class SupabaseUserService {
         return null
       }
 
-      console.log('✅ User preferences created for user:', userId)
       return data
     } catch (error) {
-      console.error('❌ Failed to create user preferences:', error)
+      console.error('Failed to create user preferences:', error)
       return null
     }
   }
@@ -113,10 +112,9 @@ export class SupabaseUserService {
       // Ensure user preferences exist
       const preferences = await this.getUserPreferences(userId)
       
-      console.log('✅ User data initialized for:', userId)
       return preferences
     } catch (error) {
-      console.error('❌ Failed to initialize user data:', error)
+      console.error('Failed to initialize user data:', error)
       return null
     }
   }

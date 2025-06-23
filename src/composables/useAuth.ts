@@ -9,7 +9,6 @@ const isRealUser = ref(false)
 const storePreviousAnonymousUserId = (currentUserId: string) => {
   if (currentUserId && user.value?.is_anonymous) {
     localStorage.setItem('spendcheck_previous_anonymous_user_id', currentUserId)
-    console.log('📝 Stored previous anonymous user ID for migration')
   }
 }
 

@@ -112,7 +112,6 @@ export function useUserPreferences() {
    */
   const migrateSpendingData = async (): Promise<void> => {
     if (!isAuthenticated.value || !isRealUser.value || !user.value) {
-      console.log('Cannot migrate spending data: user not authenticated')
       return
     }
 
@@ -120,23 +119,18 @@ export function useUserPreferences() {
       const previousAnonymousUserId = getPreviousAnonymousUserId()
       
       if (!previousAnonymousUserId) {
-        console.log('No previous anonymous user ID found, skipping spending data migration')
         return
       }
-
-      console.log('🔄 Starting spending data migration...')
       
       // Migrate spending data from anonymous to authenticated user
       const result = await migrateAnonymousSpendingData(previousAnonymousUserId, user.value.id)
       
       if (result?.success) {
-        console.log(`✅ Successfully migrated ${result.migratedCount} spending entries`)
-        
         // Clean up stored anonymous user ID after successful migration
         clearPreviousAnonymousUserId()
       }
     } catch (error) {
-      console.error('❌ Failed to migrate spending data:', error)
+      console.error('Failed to migrate spending data:', error)
       // Don't clear the stored user ID if migration failed - allow retry
     }
   }
@@ -150,23 +144,18 @@ export function useUserPreferences() {
     }
 
     try {
-      console.log('🚀 Initializing user preferences...')
-
       // First, initialize the user (creates default preferences if needed)
       await initializeUser()
 
       // Load existing preferences
       await loadUserPreferences()
 
-      // Migrate any guest preferences and spending data if this is a new user
-      if (hasPreferences.value) {
-        await migrateGuestPreferences()
-        await migrateSpendingData()
-      }
-
-      console.log('✅ User preferences initialization complete')
+      // Always attempt to migrate guest preferences and spending data 
+      // This works for both new users and existing users logging in again
+      await migrateGuestPreferences()
+      await migrateSpendingData()
     } catch (error) {
-      console.error('❌ Failed to initialize user preferences:', error)
+      console.error('Failed to initialize user preferences:', error)
       preferencesError.value = error instanceof Error ? error.message : 'Failed to initialize preferences'
     }
   }
