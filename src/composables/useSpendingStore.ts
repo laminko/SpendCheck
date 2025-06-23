@@ -114,12 +114,48 @@ export function useSpendingStore() {
     }
   }
 
+  // Migrate spending data from anonymous to authenticated user
+  const migrateAnonymousSpendingData = async (oldUserId: string, newUserId: string) => {
+    if (!oldUserId || !newUserId || oldUserId === newUserId) {
+      console.log('Skipping migration: invalid user IDs')
+      return
+    }
+
+    try {
+      console.log(`🔄 Migrating spending data from ${oldUserId} to ${newUserId}...`)
+
+      // Update all spending entries from old user_id to new user_id
+      const { data, error } = await supabase
+        .from('spending_entries')
+        .update({ user_id: newUserId })
+        .eq('user_id', oldUserId)
+        .select('id')
+
+      if (error) {
+        console.error('Migration error:', error)
+        throw error
+      }
+
+      const migratedCount = data?.length || 0
+      console.log(`✅ Successfully migrated ${migratedCount} spending entries`)
+
+      // Reload entries for the new user to update local state
+      await loadEntries()
+
+      return { success: true, migratedCount }
+    } catch (error) {
+      console.error('❌ Failed to migrate spending data:', error)
+      throw error
+    }
+  }
+
   return {
     entries,
     todayTotal,
     thisMonthTotal,
     loadEntries,
     addEntry,
-    deleteEntry
+    deleteEntry,
+    migrateAnonymousSpendingData
   }
 }

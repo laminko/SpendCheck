@@ -109,7 +109,12 @@ For production releases:
   - Delete categories
   - Category validation
 - User Preferences Storage - Currency saving for authenticated users
-- Data Migration - Moving guest data to authenticated accounts
+- **Data Migration - Moving guest data to authenticated accounts (CRITICAL - Issue #48):**
+  - **PROBLEM**: Anonymous users lose ALL spending data when signing in
+  - **ROOT CAUSE**: Spending entries tied to anonymous user_id, authentication creates new user_id
+  - **STATUS**: Currency preferences migrate correctly, spending data does NOT
+  - **IMPACT**: Critical UX issue - users lose all tracking history when upgrading accounts
+  - **SOLUTION NEEDED**: Implement migrateSpendingData() function similar to migrateGuestPreferences()
 
 **Current Status:** Core authentication system is fully implemented with modern UI. Phone verification and category management remain as next implementation targets.
 
