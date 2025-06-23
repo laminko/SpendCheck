@@ -179,7 +179,8 @@ const maxDate = computed(() => {
 
 // Computed
 const isValid = computed(() => {
-  const amountValid = amount.value && parseFloat(amount.value) > 0
+  const amountValue = parseFloat(amount.value)
+  const amountValid = amount.value.trim() !== '' && !isNaN(amountValue) && amountValue > 0
   const categoryValid = !selectedCategory.value || 
     (selectedCategory.value !== 'custom' || (customCategory.value.trim().length > 0))
   return amountValid && categoryValid
