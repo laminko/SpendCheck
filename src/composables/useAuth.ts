@@ -5,6 +5,22 @@ const userId = ref<string | null>(null)
 const user = ref<any>(null)
 const isRealUser = ref(false)
 
+// Store previous anonymous user ID for migration
+const storePreviousAnonymousUserId = (currentUserId: string) => {
+  if (currentUserId && user.value?.is_anonymous) {
+    localStorage.setItem('spendcheck_previous_anonymous_user_id', currentUserId)
+    console.log('📝 Stored previous anonymous user ID for migration')
+  }
+}
+
+const getPreviousAnonymousUserId = (): string | null => {
+  return localStorage.getItem('spendcheck_previous_anonymous_user_id')
+}
+
+const clearPreviousAnonymousUserId = () => {
+  localStorage.removeItem('spendcheck_previous_anonymous_user_id')
+}
+
 export const useAuth = () => {
   const isAuthenticated = computed(() => !!userId.value)
 
@@ -77,6 +93,11 @@ export const useAuth = () => {
 
   const signUpWithEmail = async (email: string, password: string) => {
     try {
+      // Store current anonymous user ID before authentication
+      if (userId.value) {
+        storePreviousAnonymousUserId(userId.value)
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -103,6 +124,11 @@ export const useAuth = () => {
 
   const signInWithEmail = async (email: string, password: string) => {
     try {
+      // Store current anonymous user ID before authentication
+      if (userId.value) {
+        storePreviousAnonymousUserId(userId.value)
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -129,6 +155,11 @@ export const useAuth = () => {
 
   const signInWithOAuth = async (provider: 'google' | 'facebook') => {
     try {
+      // Store current anonymous user ID before authentication
+      if (userId.value) {
+        storePreviousAnonymousUserId(userId.value)
+      }
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
@@ -225,6 +256,8 @@ export const useAuth = () => {
     initializeAuth,
     ensureValidSession,
     signOut,
-    setupAuthListener
+    setupAuthListener,
+    getPreviousAnonymousUserId,
+    clearPreviousAnonymousUserId
   }
 }

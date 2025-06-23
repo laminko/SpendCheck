@@ -7,6 +7,7 @@
 import { ref, computed, watch } from 'vue'
 import { useAuth } from './useAuth'
 import { useCurrency } from './useCurrency'
+import { useSpendingStore } from './useSpendingStore'
 import { useSupabaseUserService } from '@/services/supabaseUserService'
 import type { UserPreference } from '@/lib/supabase'
 
@@ -16,9 +17,10 @@ const isLoadingPreferences = ref(false)
 const preferencesError = ref<string | null>(null)
 
 export function useUserPreferences() {
-  const { isAuthenticated, isRealUser, user } = useAuth()
+  const { isAuthenticated, isRealUser, user, getPreviousAnonymousUserId, clearPreviousAnonymousUserId } = useAuth()
   const { getUserPreferences, updateUserPreferences, initializeUser } = useSupabaseUserService()
   const { loadSavedCurrency } = useCurrency()
+  const { migrateAnonymousSpendingData } = useSpendingStore()
 
   // Computed properties
   const hasPreferences = computed(() => !!userPreferences.value)
@@ -106,6 +108,40 @@ export function useUserPreferences() {
   }
 
   /**
+   * Migrate spending data from anonymous to authenticated user
+   */
+  const migrateSpendingData = async (): Promise<void> => {
+    if (!isAuthenticated.value || !isRealUser.value || !user.value) {
+      console.log('Cannot migrate spending data: user not authenticated')
+      return
+    }
+
+    try {
+      const previousAnonymousUserId = getPreviousAnonymousUserId()
+      
+      if (!previousAnonymousUserId) {
+        console.log('No previous anonymous user ID found, skipping spending data migration')
+        return
+      }
+
+      console.log('🔄 Starting spending data migration...')
+      
+      // Migrate spending data from anonymous to authenticated user
+      const result = await migrateAnonymousSpendingData(previousAnonymousUserId, user.value.id)
+      
+      if (result?.success) {
+        console.log(`✅ Successfully migrated ${result.migratedCount} spending entries`)
+        
+        // Clean up stored anonymous user ID after successful migration
+        clearPreviousAnonymousUserId()
+      }
+    } catch (error) {
+      console.error('❌ Failed to migrate spending data:', error)
+      // Don't clear the stored user ID if migration failed - allow retry
+    }
+  }
+
+  /**
    * Initialize user preferences when user first authenticates
    */
   const initializeUserPreferences = async (): Promise<void> => {
@@ -122,9 +158,10 @@ export function useUserPreferences() {
       // Load existing preferences
       await loadUserPreferences()
 
-      // Migrate any guest preferences if this is a new user
+      // Migrate any guest preferences and spending data if this is a new user
       if (hasPreferences.value) {
         await migrateGuestPreferences()
+        await migrateSpendingData()
       }
 
       console.log('✅ User preferences initialization complete')
@@ -214,6 +251,7 @@ export function useUserPreferences() {
     loadUserPreferences,
     initializeUserPreferences,
     migrateGuestPreferences,
+    migrateSpendingData,
     updateTheme,
     updateNotifications,
     resetToGuestMode,
