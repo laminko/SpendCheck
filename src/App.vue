@@ -5,7 +5,17 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { IonApp, IonRouterOutlet } from '@ionic/vue'
+import { useAuth } from '@/composables/useAuth'
+import { inject } from '@vercel/analytics'
+
+const { setupAuthListener } = useAuth()
+
+onMounted(() => {
+  setupAuthListener()
+  inject()
+})
 </script>
 
 <style>

@@ -70,6 +70,7 @@
       :is-open="showSpendingDialog"
       @close="showSpendingDialog = false"
       @save="logSpending"
+      @set-saving="setSaving"
     />
   </ion-page>
 </template>
@@ -99,10 +100,14 @@ import CurrencyPicker from '@/components/CurrencyPicker.vue'
 import SpendingDialog from '@/components/SpendingDialog.vue'
 import { useCurrency } from '@/composables/useCurrency'
 import { useSpendingStore } from '@/composables/useSpendingStore'
+import { useAuth } from '@/composables/useAuth'
 
 const loading = ref(false)
+const dialogSaving = ref(false)
 const { currencyCode, loadSavedCurrency, formatAmount } = useCurrency()
 const { entries, todayTotal, thisMonthTotal, loadEntries, addEntry } = useSpendingStore()
+const { initializeAuth } = useAuth()
+
 const showSpendingDialog = ref(false)
 const route = useRoute()
 
@@ -115,6 +120,10 @@ const handleSpendButtonClick = async () => {
     // Haptics not available on web
   }
   showSpendingDialog.value = true
+}
+
+const setSaving = (saving: boolean) => {
+  dialogSaving.value = saving
 }
 
 const logSpending = async (spendingData: { amount: number; category?: string; categoryId?: string; date?: string }) => {
@@ -137,9 +146,6 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
       date: date
     })
 
-    // Keep dialog open for multiple entries
-    // showSpendingDialog.value = false
-
     // Show success toast
     const toast = await toastController.create({
       message: `${formatAmount(amount)} ${category ? `for ${category}` : ''} tracked successfully!`,
@@ -154,6 +160,9 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
       ]
     })
     await toast.present()
+    
+    // Close dialog after successful save
+    showSpendingDialog.value = false
   } catch (error) {
     console.error('Error logging spending:', error)
     
@@ -171,22 +180,34 @@ const logSpending = async (spendingData: { amount: number; category?: string; ca
       ]
     })
     await toast.present()
+    
+    // Close dialog after error as well
+    showSpendingDialog.value = false
   } finally {
     loading.value = false
   }
 }
 
-
-
-onMounted(() => {
-  loadSavedCurrency()
-  loadEntries()
+onMounted(async () => {
+  // Initialize authentication first, then load preferences and entries
+  try {
+    await initializeAuth()
+    await loadSavedCurrency()
+    await loadEntries()
+  } catch (error) {
+    console.error('Error initializing app:', error)
+  }
 })
 
 // Watch for route changes to this tab
-watch(() => route.path, (newPath) => {
+watch(() => route.path, async (newPath) => {
   if (newPath === '/tabs/home') {
-    loadEntries()
+    try {
+      await initializeAuth()
+      await loadEntries()
+    } catch (error) {
+      console.error('Error refreshing data:', error)
+    }
   }
 }, { immediate: false })
 </script>
@@ -280,6 +301,10 @@ watch(() => route.path, (newPath) => {
 
 .stat-card {
   margin: 0;
+  background: #FFFFFF;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid #E5E5EA;
 }
 
 .stat-number {

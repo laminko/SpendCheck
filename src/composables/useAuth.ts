@@ -2,6 +2,23 @@ import { ref, computed } from 'vue'
 import { supabase } from '@/lib/supabase'
 
 const userId = ref<string | null>(null)
+const user = ref<any>(null)
+const isRealUser = ref(false)
+
+// Store previous anonymous user ID for migration
+const storePreviousAnonymousUserId = (currentUserId: string) => {
+  if (currentUserId && user.value?.is_anonymous) {
+    localStorage.setItem('spendcheck_previous_anonymous_user_id', currentUserId)
+  }
+}
+
+const getPreviousAnonymousUserId = (): string | null => {
+  return localStorage.getItem('spendcheck_previous_anonymous_user_id')
+}
+
+const clearPreviousAnonymousUserId = () => {
+  localStorage.removeItem('spendcheck_previous_anonymous_user_id')
+}
 
 export const useAuth = () => {
   const isAuthenticated = computed(() => !!userId.value)
@@ -17,6 +34,8 @@ export const useAuth = () => {
       
       if (data.user) {
         userId.value = data.user.id
+        user.value = data.user
+        isRealUser.value = !data.user.is_anonymous
         return { success: true, userId: data.user.id }
       }
       
@@ -34,6 +53,8 @@ export const useAuth = () => {
       
       if (session?.user) {
         userId.value = session.user.id
+        user.value = session.user
+        isRealUser.value = !session.user.is_anonymous
         return session.user.id
       }
       
@@ -52,9 +73,11 @@ export const useAuth = () => {
       const { data: { session } } = await supabase.auth.getSession()
       
       if (session?.user) {
-        // Update local userId if needed
+        // Update local state if needed
         if (userId.value !== session.user.id) {
           userId.value = session.user.id
+          user.value = session.user
+          isRealUser.value = !session.user.is_anonymous
         }
         return session.user.id
       }
@@ -67,22 +90,173 @@ export const useAuth = () => {
     }
   }
 
+  const signUpWithEmail = async (email: string, password: string) => {
+    try {
+      // Store current anonymous user ID before authentication
+      if (userId.value) {
+        storePreviousAnonymousUserId(userId.value)
+      }
+
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      })
+      
+      if (error) {
+        console.error('Error signing up:', error)
+        throw error
+      }
+      
+      if (data.user) {
+        userId.value = data.user.id
+        user.value = data.user
+        isRealUser.value = true
+        return { success: true, user: data.user, session: data.session }
+      }
+      
+      throw new Error('No user returned from sign up')
+    } catch (error) {
+      console.error('Error signing up:', error)
+      throw error
+    }
+  }
+
+  const signInWithEmail = async (email: string, password: string) => {
+    try {
+      // Store current anonymous user ID before authentication
+      if (userId.value) {
+        storePreviousAnonymousUserId(userId.value)
+      }
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      
+      if (error) {
+        console.error('Error signing in:', error)
+        throw error
+      }
+      
+      if (data.user) {
+        userId.value = data.user.id
+        user.value = data.user
+        isRealUser.value = true
+        return { success: true, user: data.user, session: data.session }
+      }
+      
+      throw new Error('No user returned from sign in')
+    } catch (error) {
+      console.error('Error signing in:', error)
+      throw error
+    }
+  }
+
+  const signInWithOAuth = async (provider: 'google' | 'facebook') => {
+    try {
+      // Store current anonymous user ID before authentication
+      if (userId.value) {
+        storePreviousAnonymousUserId(userId.value)
+      }
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/`
+        }
+      })
+      
+      if (error) {
+        console.error(`Error signing in with ${provider}:`, error)
+        throw error
+      }
+      
+      return { success: true }
+    } catch (error) {
+      console.error(`Error signing in with ${provider}:`, error)
+      throw error
+    }
+  }
+
+  const resetPassword = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      })
+      
+      if (error) {
+        console.error('Error sending reset password email:', error)
+        throw error
+      }
+      
+      return { success: true }
+    } catch (error) {
+      console.error('Error sending reset password email:', error)
+      throw error
+    }
+  }
+
+  const updatePassword = async (newPassword: string) => {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      })
+      
+      if (error) {
+        console.error('Error updating password:', error)
+        throw error
+      }
+      
+      return { success: true }
+    } catch (error) {
+      console.error('Error updating password:', error)
+      throw error
+    }
+  }
+
   const signOut = async () => {
     try {
       await supabase.auth.signOut()
       userId.value = null
+      user.value = null
+      isRealUser.value = false
     } catch (error) {
       console.error('Error signing out:', error)
       throw error
     }
   }
 
+  // Listen for auth state changes
+  const setupAuthListener = () => {
+    supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        userId.value = session.user.id
+        user.value = session.user
+        isRealUser.value = !session.user.is_anonymous
+      } else {
+        userId.value = null
+        user.value = null
+        isRealUser.value = false
+      }
+    })
+  }
+
   return {
     userId: computed(() => userId.value),
+    user: computed(() => user.value),
+    isRealUser: computed(() => isRealUser.value),
     isAuthenticated,
     signInAnonymously,
+    signUpWithEmail,
+    signInWithEmail,
+    signInWithOAuth,
+    resetPassword,
+    updatePassword,
     initializeAuth,
     ensureValidSession,
-    signOut
+    signOut,
+    setupAuthListener,
+    getPreviousAnonymousUserId,
+    clearPreviousAnonymousUserId
   }
 }

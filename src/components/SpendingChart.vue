@@ -146,10 +146,11 @@ const chartData = computed(() => {
 
 <style scoped>
 .spending-chart {
-  background: white;
-  border-radius: 12px;
+  background: #FFFFFF;
+  border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+  border: 1px solid #E5E5EA;
 }
 
 .chart-header {

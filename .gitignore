@@ -29,7 +29,20 @@ dist-ssr
 .env.development.local
 .env.test.local
 .env.production.local
+.env.production
+.env.development
 
 # Screenshots folder
 screenshots/
 .vercel
+
+/generated/prisma
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Claude Code local settings
+.claude/
+
