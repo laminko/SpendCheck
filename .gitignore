@@ -46,4 +46,3 @@ playwright/.cache/
 # Claude Code local settings
 .claude/
 
-CLAUDE.md
