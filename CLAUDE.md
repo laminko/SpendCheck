@@ -50,9 +50,9 @@ For production releases:
 
 **Current Branch Status:**
 - Working on `dev` branch (main development branch)
-- Latest commit: `09f35f4` - Version bump to 1.3.0 for release
+- Latest commit: `67ea87d` - Update Settings.vue version display to 1.3.0
 - Working directory clean, all changes committed
-- Pull Request #50 updated: "Release v1.3.0: Major authentication and user management features"
+- Pull Request #51 created: "Release v1.3.0: Facebook OAuth UI removal and version bump"
 
 **Recent Key Issues Resolved:**
 1. **Authentication System** - Implemented complete Supabase authentication (email/password, OAuth)
