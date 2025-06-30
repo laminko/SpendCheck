@@ -49,9 +49,10 @@ For production releases:
 - Mobile-ready with Capacitor for iOS/Android
 
 **Current Branch Status:**
-- Working on `feature/settings-page-auth` branch (authentication implementation)
-- Latest commit: `daf10b1` - Enhanced email/password authentication with Apple design system
-- Working directory has modified environment files (.env.development, .env.production)
+- Working on `dev` branch (main development branch)
+- Latest commit: `09f35f4` - Version bump to 1.3.0 for release
+- Working directory clean, all changes committed
+- Pull Request #50 updated: "Release v1.3.0: Major authentication and user management features"
 
 **Recent Key Issues Resolved:**
 1. **Authentication System** - Implemented complete Supabase authentication (email/password, OAuth)
@@ -59,6 +60,7 @@ For production releases:
 3. **Settings Page** - Complete refactor with proper Ionic components
 4. **Currency Picker** - Replaced custom modal with existing CurrencyPicker component
 5. **History.vue Import Issues** - Fixed missing `useSpendingStore` and `useDateUtils` imports
+6. **Facebook OAuth UI** - Temporarily hidden Facebook sign-in button (commit 939a395)
 
 **Technical Architecture:**
 - **Frontend:** Vue 3 Composition API + TypeScript + Ionic Vue
@@ -95,7 +97,7 @@ For production releases:
 - ✅ Complete Supabase authentication system implemented
 - ✅ Email/password authentication with proper validation
 - ✅ Google OAuth integration (`signInWithGoogle`)
-- ✅ Facebook OAuth integration (`signInWithFacebook`) 
+- ⚠️ Facebook OAuth integration (temporarily hidden in UI) 
 - ✅ Apple OAuth integration (`signInWithApple`)
 - ✅ Real authentication state management in `useAuth.ts`
 - ✅ Enhanced UI with Apple design system components
