@@ -134,7 +134,7 @@
             <ion-icon :icon="informationCircleOutline" slot="start"></ion-icon>
             <ion-label>
               <h3>SpendCheck</h3>
-              <p>Version 1.2.0</p>
+              <p>Version 1.3.0</p>
             </ion-label>
           </ion-item>
         </ion-list>
