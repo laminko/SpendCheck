@@ -307,7 +307,7 @@ import {
   cardOutline,
   folderOutline,
   informationCircleOutline,
-  logoFacebook,
+  // logoFacebook, // Temporarily disabled
   mail,
   closeOutline,
   contrastOutline,
@@ -394,15 +394,16 @@ const signInWithGoogle = async () => {
   }
 }
 
-const signInWithFacebook = async () => {
-  try {
-    await signInWithOAuth('facebook')
-    resetAuthModal()
-    await showSuccessToast('Redirecting to Facebook...')
-  } catch (error) {
-    await showErrorToast('Failed to sign in with Facebook')
-  }
-}
+// Facebook OAuth temporarily disabled
+// const signInWithFacebook = async () => {
+//   try {
+//     await signInWithOAuth('facebook')
+//     resetAuthModal()
+//     await showSuccessToast('Redirecting to Facebook...')
+//   } catch (error) {
+//     await showErrorToast('Failed to sign in with Facebook')
+//   }
+// }
 
 const validateField = (field: string) => {
   formErrors.value = { ...formErrors.value }
