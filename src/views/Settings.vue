@@ -262,10 +262,11 @@
               Continue with Google
             </ion-button>
 
-            <ion-button expand="block" fill="outline" @click="signInWithFacebook" class="ion-margin-bottom">
+            <!-- Facebook OAuth temporarily hidden -->
+            <!-- <ion-button expand="block" fill="outline" @click="signInWithFacebook" class="ion-margin-bottom">
               <ion-icon :icon="logoFacebook" slot="start" style="margin-right: 12px;"></ion-icon>
               Continue with Facebook
-            </ion-button>
+            </ion-button> -->
           </div>
         </ion-content>
       </ion-modal>
